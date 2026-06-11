@@ -1,32 +1,19 @@
-import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X } from "lucide-react";
 import { getMeta } from "@/lib/menu-categories";
+import { useMenuContext } from "@/contexts/MenuContext";
 
 interface Cat { key: string; label: string }
 
 export function CategoryNav({ categories }: { categories: Cat[] }) {
-  const [active, setActive] = useState<string>(categories[0]?.key ?? "");
+  const { activeCategory, setActiveCategory } = useMenuContext();
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible) setActive(visible.target.id);
-      },
-      { rootMargin: "-30% 0px -60% 0px", threshold: [0, 0.25, 0.5, 1] }
-    );
-    categories.forEach((c) => {
-      const el = document.getElementById(c.key);
-      if (el) observer.observe(el);
-    });
-    return () => observer.disconnect();
-  }, [categories]);
+  const handleSelectCategory = (categoryKey: string) => {
+    setActiveCategory(categoryKey);
+  };
 
-  const handleClick = (id: string) => {
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  const handleClose = () => {
+    setActiveCategory(null);
   };
 
   return (
@@ -34,28 +21,55 @@ export function CategoryNav({ categories }: { categories: Cat[] }) {
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="sticky top-0 z-30 border-b border-arena/10 bg-carbon/85 backdrop-blur-md"
+      className="sticky top-0 z-30 border-b border-arena/10 bg-carbon/85 backdrop-blur-md py-6"
     >
-      <div className="no-scrollbar mx-auto flex max-w-7xl items-center gap-1 overflow-x-auto px-3 py-2.5">
-        {categories.map((c) => {
-          const Icon = getMeta(c.key).icon;
-          const isActive = active === c.key;
-          return (
-            <button
-              key={c.key}
-              onClick={() => handleClick(c.key)}
-              className={[
-                "shrink-0 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-[var(--font-heading)] font-semibold transition-all duration-200",
-                isActive
-                  ? "bg-sombrero text-carbon shadow-[0_8px_24px_-8px_rgba(242,178,51,0.6)]"
-                  : "text-arena/70 hover:text-sombrero hover:bg-arena/5",
-              ].join(" ")}
+      <div className="mx-auto max-w-7xl px-4">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6 justify-center">
+          {categories.map((c) => {
+            const meta = getMeta(c.key);
+            const Icon = meta.icon;
+            const isActive = activeCategory === c.key;
+
+            return (
+              <motion.button
+                key={c.key}
+                onClick={() => handleSelectCategory(c.key)}
+                className={`flex flex-col items-center justify-center gap-2 rounded-2xl p-4 h-20 transition-all duration-300 ${
+                  isActive
+                    ? "bg-sombrero text-carbon scale-105 shadow-[0_0_24px_rgba(242,178,51,0.6)]"
+                    : "bg-gris/40 border border-arena/10 text-arena hover:bg-gris/60 hover:border-arena/20"
+                }`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Icon className="h-6 w-6" />
+                <span className="text-xs font-semibold text-center leading-tight line-clamp-2">
+                  {c.label}
+                </span>
+              </motion.button>
+            );
+          })}
+        </div>
+
+        <AnimatePresence>
+          {activeCategory && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="flex justify-center mt-4"
             >
-              <Icon className="h-4 w-4" />
-              <span className="whitespace-nowrap">{c.label}</span>
-            </button>
-          );
-        })}
+              <button
+                onClick={handleClose}
+                className="inline-flex items-center gap-2 rounded-full px-4 py-2 bg-arena/10 border border-arena/30 text-arena hover:bg-arena/20 hover:border-arena/50 transition-all duration-200"
+              >
+                <X className="h-4 w-4" />
+                <span className="text-sm font-medium">Cerrar</span>
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.nav>
   );

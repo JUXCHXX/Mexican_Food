@@ -6,6 +6,7 @@ import { MenuSection } from "@/components/MenuSection";
 import { Footer } from "@/components/Footer";
 import { ChatBubble } from "@/components/ChatBubble";
 import { SearchBubble } from "@/components/SearchBubble";
+import { MenuProvider } from "@/contexts/MenuContext";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -34,25 +35,27 @@ function Index() {
   };
 
   return (
-    <main className="min-h-screen bg-carbon">
-      <HeroSection onCtaClick={scrollToMenu} />
-      <CategoryNav categories={categories} />
+    <MenuProvider>
+      <main className="min-h-screen bg-carbon">
+        <HeroSection onCtaClick={scrollToMenu} />
+        <CategoryNav categories={categories} />
 
-      <div className="relative">
-        {Object.entries(data.menu).filter(([k]) => k !== "build_your_own_combo").map(([key, section]) => (
-          <MenuSection
-            key={key}
-            id={key}
-            label={section.label}
-            description={section.description}
-            items={section.items ?? []}
-          />
-        ))}
-      </div>
+        <div className="relative">
+          {Object.entries(data.menu).filter(([k]) => k !== "build_your_own_combo").map(([key, section]) => (
+            <MenuSection
+              key={key}
+              id={key}
+              label={section.label}
+              description={section.description}
+              items={section.items ?? []}
+            />
+          ))}
+        </div>
 
-      <Footer />
-      <ChatBubble />
-      <SearchBubble />
-    </main>
+        <Footer />
+        <ChatBubble />
+        <SearchBubble />
+      </main>
+    </MenuProvider>
   );
 }

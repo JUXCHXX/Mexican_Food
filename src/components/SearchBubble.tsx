@@ -1,7 +1,8 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { Search, X } from "lucide-react";
+import { Search, X, ArrowRight } from "lucide-react";
 import menuData from "@/data/menu.json";
+import { useMenuContext } from "@/contexts/MenuContext";
 
 interface MenuItem {
   name: string;
@@ -16,10 +17,15 @@ interface SearchResult extends MenuItem {
   category: string;
 }
 
+const slugify = (s: string): string => {
+  return s.toLowerCase().replace(/\s+/g, "-").replace(/[^\w-]/g, "");
+};
+
 export function SearchBubble() {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
+  const { setActiveCategory, setHighlightedItemId } = useMenuContext();
 
   const searchMenu = (query: string) => {
     if (!query.trim()) {
@@ -46,9 +52,41 @@ export function SearchBubble() {
 
   const getPrice = (item: MenuItem): string => {
     if (item.price) return `$${item.price.toFixed(2)}`;
-    if (item.price_small && item.price_large) return `$${item.price_small.toFixed(2)} - $${item.price_large.toFixed(2)}`;
+    if (item.price_small && item.price_large)
+      return `$${item.price_small.toFixed(2)} - $${item.price_large.toFixed(2)}`;
     if (item.price_large) return `$${item.price_large.toFixed(2)}`;
     return "N/A";
+  };
+
+  const truncateDesc = (desc: string | undefined, maxLen: number = 60): string => {
+    if (!desc) return "";
+    return desc.length > maxLen ? desc.slice(0, maxLen) + "..." : desc;
+  };
+
+  const handleGoToItem = (item: SearchResult) => {
+    const itemId = `item-${item.category}-${slugify(item.name)}`;
+
+    // Cerrar panel
+    setOpen(false);
+    setSearch("");
+    setResults([]);
+
+    // Activar categoría
+    setActiveCategory(item.category);
+
+    // Esperar a que DOM renderice
+    setTimeout(() => {
+      const element = document.getElementById(itemId);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "center" });
+        setHighlightedItemId(itemId);
+
+        // Limpiar highlight después de 2500 + 800ms (duración total del glow + fade)
+        setTimeout(() => {
+          setHighlightedItemId(null);
+        }, 3300);
+      }
+    }, 300);
   };
 
   return (
@@ -66,9 +104,19 @@ export function SearchBubble() {
             <div className="flex items-center justify-between gap-3 border-b border-arena/10 bg-gris px-4 py-3">
               <div className="flex items-center gap-2">
                 <Search className="h-5 w-5 text-sombrero" />
-                <span className="font-[var(--font-heading)] font-semibold text-arena leading-tight">Buscar Platos</span>
+                <span className="font-[var(--font-heading)] font-semibold text-arena leading-tight">
+                  Buscar Platos
+                </span>
               </div>
-              <button onClick={() => { setOpen(false); setSearch(""); setResults([]); }} className="text-arena/70 hover:text-sombrero p-1 rounded-full hover:bg-arena/5" aria-label="Cerrar">
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  setSearch("");
+                  setResults([]);
+                }}
+                className="text-arena/70 hover:text-sombrero p-1 rounded-full hover:bg-arena/5"
+                aria-label="Cerrar"
+              >
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -96,16 +144,30 @@ export function SearchBubble() {
                 <div className="text-center py-6 text-arena/50 text-sm">Escribe para buscar platos…</div>
               ) : (
                 results.map((item, i) => (
-                  <div key={i} className="bg-gris/40 border border-arena/10 rounded-xl p-2.5 text-xs hover:bg-gris/60 transition">
+                  <div key={i} className="bg-gris/40 border border-arena/10 rounded-xl p-3 space-y-2 hover:bg-gris/60 transition">
+                    {/* Nombre y Precio */}
                     <div className="flex justify-between items-start gap-2">
-                      <div className="flex-1">
-                        <div className="font-medium text-arena">{item.name}</div>
-                        {item.description && (
-                          <div className="text-arena/60 line-clamp-2 mt-0.5">{item.description}</div>
-                        )}
-                        <div className="text-jalapeno font-semibold mt-1">{getPrice(item)}</div>
+                      <div className="font-medium text-arena text-sm flex-1">{item.name}</div>
+                      <div className="text-jalapeno font-semibold text-xs whitespace-nowrap">
+                        {getPrice(item)}
                       </div>
                     </div>
+
+                    {/* Descripción */}
+                    {item.description && (
+                      <div className="text-arena/60 text-xs line-clamp-2">
+                        {truncateDesc(item.description, 60)}
+                      </div>
+                    )}
+
+                    {/* Botón "Ir al plato →" */}
+                    <button
+                      onClick={() => handleGoToItem(item)}
+                      className="w-full mt-2 bg-sombrero hover:bg-sombrero/90 text-carbon font-semibold text-xs py-2 px-3 rounded-lg flex items-center justify-center gap-1 transition-all duration-200 hover:scale-105"
+                    >
+                      Ir al plato
+                      <ArrowRight className="h-3 w-3" />
+                    </button>
                   </div>
                 ))
               )}
