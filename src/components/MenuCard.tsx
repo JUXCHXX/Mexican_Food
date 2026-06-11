@@ -9,6 +9,16 @@ export interface MenuItem {
   price?: number;
   price_small?: number;
   price_large?: number;
+  price_single?: number;
+  price_double?: number;
+  price_half?: number;
+  price_full?: number;
+  price_regular?: number;
+  price_mixed?: number;
+  price_shrimp?: number;
+  price_texana?: number;
+  price_3?: number;
+  prices?: Record<string, number>;
   spicy?: boolean;
   isNew?: boolean;
   popular?: boolean;
@@ -20,20 +30,110 @@ const slugify = (s: string): string => {
   return s.toLowerCase().replace(/\s+/g, "-").replace(/[^\w-]/g, "");
 };
 
-function PriceBlock({ item }: { item: MenuItem }) {
-  if (item.price_small != null && item.price_large != null) {
-    return (
-      <div className="text-right">
-        <div className="text-xs text-muted-foreground font-[var(--font-heading)] uppercase tracking-wider">Sm / Lg</div>
-        <div className="font-display text-sombrero text-xl leading-none">
-          {fmt(item.price_small)} <span className="text-arena/40 mx-1">/</span> {fmt(item.price_large)}
-        </div>
-      </div>
-    );
+const resolvePrice = (
+  item: MenuItem
+): { label?: string; display: string } | null => {
+  // 1. prices (objeto)
+  if (item.prices != null && typeof item.prices === "object") {
+    const values = Object.values(item.prices).filter((v) => typeof v === "number");
+    if (values.length > 0) {
+      return {
+        display: values.map((v) => fmt(v as number)).join(" / "),
+      };
+    }
   }
-  const p = item.price ?? item.price_large ?? item.price_small;
-  if (p == null) return null;
-  return <div className="font-display text-sombrero text-2xl leading-none">{fmt(p)}</div>;
+
+  // 2. price_small + price_large
+  if (item.price_small != null && item.price_large != null) {
+    return {
+      label: "SM / LG",
+      display: `${fmt(item.price_small)} - ${fmt(item.price_large)}`,
+    };
+  }
+
+  // 3. price_single + price_double
+  if (item.price_single != null && item.price_double != null) {
+    return {
+      label: "SGL / DBL",
+      display: `${fmt(item.price_single)} / ${fmt(item.price_double)}`,
+    };
+  }
+
+  // 4. price_half + price_full
+  if (item.price_half != null && item.price_full != null) {
+    return {
+      label: "½ / FULL",
+      display: `${fmt(item.price_half)} / ${fmt(item.price_full)}`,
+    };
+  }
+
+  // 5. price
+  if (item.price != null) {
+    return { display: fmt(item.price) };
+  }
+
+  // 6. price_regular
+  if (item.price_regular != null) {
+    return { display: fmt(item.price_regular) };
+  }
+
+  // 7. price_large (solo)
+  if (item.price_large != null) {
+    return { display: fmt(item.price_large) };
+  }
+
+  // 8. price_small (solo)
+  if (item.price_small != null) {
+    return { display: fmt(item.price_small) };
+  }
+
+  // 9. price_mixed
+  if (item.price_mixed != null) {
+    return { display: fmt(item.price_mixed) };
+  }
+
+  // 10. price_shrimp
+  if (item.price_shrimp != null) {
+    return { display: fmt(item.price_shrimp) };
+  }
+
+  // 11. price_texana
+  if (item.price_texana != null) {
+    return { display: fmt(item.price_texana) };
+  }
+
+  // 12. price_3
+  if (item.price_3 != null) {
+    return { display: fmt(item.price_3) };
+  }
+
+  return null;
+};
+
+const getPriceLabel = (item: MenuItem): string | undefined => {
+  const priceInfo = resolvePrice(item);
+  return priceInfo?.label;
+};
+
+function PriceBlock({ item }: { item: MenuItem }) {
+  const priceInfo = resolvePrice(item);
+
+  if (!priceInfo) {
+    return null;
+  }
+
+  return (
+    <div className="text-right">
+      {priceInfo.label && (
+        <div className="text-xs text-arena/50 uppercase tracking-wider font-body">
+          {priceInfo.label}
+        </div>
+      )}
+      <div className="font-display text-sombrero text-xl leading-none">
+        {priceInfo.display}
+      </div>
+    </div>
+  );
 }
 
 export function MenuCard({
@@ -76,7 +176,8 @@ export function MenuCard({
     }
   }, [isHighlighted]);
 
-  const longDesc = (item.description?.length ?? 0) > 110;
+  const hasDescription = item.description && item.description.trim().length > 0;
+  const longDesc = hasDescription && item.description!.length > 110;
   const desc = expanded || !longDesc ? item.description : item.description!.slice(0, 110) + "…";
 
   const glowShadow = isGlowing
@@ -85,13 +186,7 @@ export function MenuCard({
 
   // Variante MODAL
   if (variant === "modal") {
-    const getPrice = (): string => {
-      if (item.price) return fmt(item.price);
-      if (item.price_small && item.price_large)
-        return `${fmt(item.price_small)} - ${fmt(item.price_large)}`;
-      if (item.price_large) return fmt(item.price_large);
-      return "N/A";
-    };
+    const priceInfo = resolvePrice(item);
 
     return (
       <motion.button
@@ -116,8 +211,8 @@ export function MenuCard({
             {item.name}
           </h3>
 
-          {/* Descripción - Centro */}
-          {item.description && (
+          {/* Descripción - Centro (solo si existe) */}
+          {hasDescription && (
             <p className="text-xs md:text-sm text-arena/60 font-body mt-2 flex-1 line-clamp-2">
               {item.description}
             </p>
@@ -136,9 +231,18 @@ export function MenuCard({
                 <Star className="h-3 w-3 md:h-4 md:w-4 text-sombrero" />
               )}
             </div>
-            <div className="font-display text-sombrero text-lg md:text-xl font-semibold whitespace-nowrap">
-              {getPrice()}
-            </div>
+            {priceInfo && (
+              <div>
+                {priceInfo.label && (
+                  <div className="text-xs text-arena/50 uppercase tracking-wider font-body">
+                    {priceInfo.label}
+                  </div>
+                )}
+                <div className="font-display text-sombrero text-lg md:text-xl font-semibold whitespace-nowrap">
+                  {priceInfo.display}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </motion.button>
@@ -146,6 +250,9 @@ export function MenuCard({
   }
 
   // Variante DEFAULT (original)
+  const priceInfo = resolvePrice(item);
+  const showKidsPrice = !priceInfo && categoryId === "kids_menu";
+
   return (
     <motion.article
       id={itemId}
@@ -160,13 +267,18 @@ export function MenuCard({
       }}
     >
       <div className="flex items-start justify-between gap-4">
-        <h3 className="font-[var(--font-heading)] font-semibold text-arena text-lg leading-tight">
-          {item.name}
-        </h3>
-        <PriceBlock item={item} />
+        <div className="flex-1">
+          <h3 className="font-[var(--font-heading)] font-semibold text-arena text-lg leading-tight">
+            {item.name}
+          </h3>
+          {showKidsPrice && (
+            <div className="text-xs text-arena/40 italic mt-1">~$7.50</div>
+          )}
+        </div>
+        {priceInfo && <PriceBlock item={item} />}
       </div>
 
-      {item.description && (
+      {hasDescription && (
         <p className="text-sm text-muted-foreground leading-relaxed font-body">
           {desc}
           {longDesc && (
