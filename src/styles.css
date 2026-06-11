@@ -1,0 +1,165 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================================
+   Fabian's Mexican Restaurant — Design System
+   Mexican Modern Premium, dark theme
+   ============================================================ */
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Brand */
+  --color-sombrero: var(--sombrero);       /* #F2B233 amarillo */
+  --color-tradicional: var(--tradicional); /* #C73A2D rojo */
+  --color-jalapeno: var(--jalapeno);       /* #0F8A5F verde */
+  --color-arena: var(--arena);             /* #F5E6C8 crema */
+  --color-carbon: var(--carbon);           /* #121212 */
+  --color-gris: var(--gris);               /* #2A2A2A */
+
+  --color-primary: var(--sombrero);
+  --color-primary-foreground: var(--carbon);
+  --color-secondary: var(--gris);
+  --color-secondary-foreground: var(--arena);
+  --color-accent: var(--jalapeno);
+  --color-accent-foreground: var(--arena);
+  --color-destructive: var(--tradicional);
+  --color-destructive-foreground: var(--arena);
+  --color-popover: var(--card);
+  --color-popover-foreground: var(--card-foreground);
+
+  --font-display: "Cinzel", serif;
+  --font-heading: "Montserrat", sans-serif;
+  --font-body: "Poppins", sans-serif;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+  --radius-2xl: 28px;
+
+  --shadow-warm: 0 10px 40px -10px color-mix(in oklab, #F2B233 35%, transparent);
+  --shadow-warm-lg: 0 20px 60px -15px color-mix(in oklab, #F2B233 55%, transparent);
+}
+
+:root {
+  --sombrero: #F2B233;
+  --tradicional: #C73A2D;
+  --jalapeno: #0F8A5F;
+  --arena: #F5E6C8;
+  --carbon: #121212;
+  --gris: #2A2A2A;
+
+  --background: #121212;
+  --foreground: #F5E6C8;
+  --card: #2A2A2A;
+  --card-foreground: #F5E6C8;
+  --muted: #1d1d1d;
+  --muted-foreground: #b9ad92;
+  --border: rgba(245, 230, 200, 0.08);
+  --input: rgba(245, 230, 200, 0.12);
+  --ring: #F2B233;
+}
+
+.dark {
+  --background: #121212;
+  --foreground: #F5E6C8;
+}
+
+@layer base {
+  * { border-color: var(--color-border); }
+  html { scroll-behavior: smooth; }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    background-image:
+      radial-gradient(1200px 600px at 50% -200px, rgba(242, 178, 51, 0.10), transparent 60%),
+      radial-gradient(800px 500px at 110% 30%, rgba(199, 58, 45, 0.08), transparent 60%);
+  }
+  h1, h2, h3 { font-family: var(--font-display); letter-spacing: 0.02em; }
+  h4, h5, h6 { font-family: var(--font-heading); }
+}
+
+/* Talavera-inspired ornamental divider */
+.talavera-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  color: var(--sombrero);
+  opacity: 0.9;
+}
+.talavera-divider::before,
+.talavera-divider::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background-image: linear-gradient(
+    to right,
+    transparent 0%,
+    var(--sombrero) 30%,
+    var(--jalapeno) 50%,
+    var(--tradicional) 70%,
+    transparent 100%
+  );
+  opacity: 0.5;
+}
+
+/* Sarape stripe accent (used very low-opacity behind sections) */
+.sarape-bg {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(242, 178, 51, 0.04) 0 10px,
+    rgba(15, 138, 95, 0.04) 10px 20px,
+    rgba(199, 58, 45, 0.04) 20px 30px,
+    transparent 30px 60px
+  );
+}
+
+/* Talavera tile pattern (subtle) */
+.talavera-pattern {
+  background-image:
+    radial-gradient(circle at 25% 25%, rgba(242, 178, 51, 0.05) 2px, transparent 3px),
+    radial-gradient(circle at 75% 75%, rgba(15, 138, 95, 0.05) 2px, transparent 3px),
+    radial-gradient(circle at 75% 25%, rgba(199, 58, 45, 0.04) 2px, transparent 3px),
+    radial-gradient(circle at 25% 75%, rgba(245, 230, 200, 0.04) 2px, transparent 3px);
+  background-size: 60px 60px;
+}
+
+/* Card hover glow */
+.card-glow:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 50px -12px rgba(242, 178, 51, 0.25);
+  border-color: rgba(242, 178, 51, 0.35);
+}
+
+/* Pulse ring for chat bubble */
+@keyframes brand-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(242, 178, 51, 0.55); }
+  50%      { box-shadow: 0 0 0 18px rgba(242, 178, 51, 0); }
+}
+.brand-pulse { animation: brand-pulse 2.4s ease-out infinite; }
+
+/* Scroll-down bounce */
+@keyframes bounce-soft {
+  0%, 100% { transform: translateY(0); opacity: 0.6; }
+  50%      { transform: translateY(10px); opacity: 1; }
+}
+.bounce-soft { animation: bounce-soft 1.8s ease-in-out infinite; }
+
+/* Hide scrollbars on horizontal category nav */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
