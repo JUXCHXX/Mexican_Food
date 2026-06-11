@@ -26,7 +26,7 @@ export function Footer() {
   };
 
   return (
-    <footer className="relative mt-16 border-t border-arena/10 bg-carbon px-4 py-12 talavera-pattern">
+    <footer className="relative border-t border-arena/10 bg-carbon px-4 py-12 talavera-pattern">
       <div className="mx-auto max-w-5xl">
         <TalaveraDivider className="mb-8" symbol="❦" />
 
