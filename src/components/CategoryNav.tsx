@@ -29,7 +29,7 @@ export function CategoryNav({ categories }: { categories: Cat[] }) {
               <motion.button
                 key={c.key}
                 onClick={() => handleSelectCategory(c.key)}
-                className="flex flex-col items-center justify-center gap-2 rounded-2xl p-4 h-20 transition-all duration-300 bg-gris/40 border border-arena/10 text-arena hover:bg-gris/60 hover:border-arena/20 hover:scale-105"
+                className="flex flex-col items-center justify-center gap-2 rounded-2xl p-4 h-20 min-w-[120px] snap-start transition-all duration-300 bg-gris/40 border border-arena/10 text-arena hover:bg-gris/60 hover:border-arena/20 hover:scale-105"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
