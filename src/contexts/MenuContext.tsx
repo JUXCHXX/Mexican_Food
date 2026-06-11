@@ -1,8 +1,10 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 
 export interface MenuContextType {
-  activeCategory: string | null;
-  setActiveCategory: (id: string | null) => void;
+  isModalOpen: boolean;
+  setIsModalOpen: (open: boolean) => void;
+  selectedCategoryKey: string | null;
+  setSelectedCategoryKey: (key: string | null) => void;
   highlightedItemId: string | null;
   setHighlightedItemId: (id: string | null) => void;
 }
@@ -10,14 +12,17 @@ export interface MenuContextType {
 const MenuContext = createContext<MenuContextType | undefined>(undefined);
 
 export function MenuProvider({ children }: { children: ReactNode }) {
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedCategoryKey, setSelectedCategoryKey] = useState<string | null>(null);
   const [highlightedItemId, setHighlightedItemId] = useState<string | null>(null);
 
   return (
     <MenuContext.Provider
       value={{
-        activeCategory,
-        setActiveCategory,
+        isModalOpen,
+        setIsModalOpen,
+        selectedCategoryKey,
+        setSelectedCategoryKey,
         highlightedItemId,
         setHighlightedItemId,
       }}

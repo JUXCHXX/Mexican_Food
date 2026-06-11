@@ -1,19 +1,15 @@
-import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
+import { motion } from "framer-motion";
 import { getMeta } from "@/lib/menu-categories";
 import { useMenuContext } from "@/contexts/MenuContext";
 
 interface Cat { key: string; label: string }
 
 export function CategoryNav({ categories }: { categories: Cat[] }) {
-  const { activeCategory, setActiveCategory } = useMenuContext();
+  const { setIsModalOpen, setSelectedCategoryKey } = useMenuContext();
 
   const handleSelectCategory = (categoryKey: string) => {
-    setActiveCategory(categoryKey);
-  };
-
-  const handleClose = () => {
-    setActiveCategory(null);
+    setSelectedCategoryKey(categoryKey);
+    setIsModalOpen(true);
   };
 
   return (
@@ -28,17 +24,12 @@ export function CategoryNav({ categories }: { categories: Cat[] }) {
           {categories.map((c) => {
             const meta = getMeta(c.key);
             const Icon = meta.icon;
-            const isActive = activeCategory === c.key;
 
             return (
               <motion.button
                 key={c.key}
                 onClick={() => handleSelectCategory(c.key)}
-                className={`flex flex-col items-center justify-center gap-2 rounded-2xl p-4 h-20 transition-all duration-300 ${
-                  isActive
-                    ? "bg-sombrero text-carbon scale-105 shadow-[0_0_24px_rgba(242,178,51,0.6)]"
-                    : "bg-gris/40 border border-arena/10 text-arena hover:bg-gris/60 hover:border-arena/20"
-                }`}
+                className="flex flex-col items-center justify-center gap-2 rounded-2xl p-4 h-20 transition-all duration-300 bg-gris/40 border border-arena/10 text-arena hover:bg-gris/60 hover:border-arena/20 hover:scale-105"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -50,26 +41,6 @@ export function CategoryNav({ categories }: { categories: Cat[] }) {
             );
           })}
         </div>
-
-        <AnimatePresence>
-          {activeCategory && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="flex justify-center mt-4"
-            >
-              <button
-                onClick={handleClose}
-                className="inline-flex items-center gap-2 rounded-full px-4 py-2 bg-arena/10 border border-arena/30 text-arena hover:bg-arena/20 hover:border-arena/50 transition-all duration-200"
-              >
-                <X className="h-4 w-4" />
-                <span className="text-sm font-medium">Cerrar</span>
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
     </motion.nav>
   );

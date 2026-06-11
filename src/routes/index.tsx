@@ -6,6 +6,7 @@ import { MenuSection } from "@/components/MenuSection";
 import { Footer } from "@/components/Footer";
 import { ChatBubble } from "@/components/ChatBubble";
 import { SearchBubble } from "@/components/SearchBubble";
+import { MenuModal } from "@/components/MenuModal";
 import { MenuProvider } from "@/contexts/MenuContext";
 
 export const Route = createFileRoute("/")({
@@ -36,6 +37,7 @@ function Index() {
 
   return (
     <MenuProvider>
+      <MenuModal />
       <main className="min-h-screen bg-carbon">
         <HeroSection onCtaClick={scrollToMenu} />
         <CategoryNav categories={categories} />

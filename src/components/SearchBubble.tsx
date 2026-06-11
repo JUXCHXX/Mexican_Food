@@ -25,7 +25,7 @@ export function SearchBubble() {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
-  const { setActiveCategory, setHighlightedItemId } = useMenuContext();
+  const { setIsModalOpen, setSelectedCategoryKey, setHighlightedItemId } = useMenuContext();
 
   const searchMenu = (query: string) => {
     if (!query.trim()) {
@@ -66,15 +66,16 @@ export function SearchBubble() {
   const handleGoToItem = (item: SearchResult) => {
     const itemId = `item-${item.category}-${slugify(item.name)}`;
 
-    // Cerrar panel
+    // Cerrar panel de búsqueda
     setOpen(false);
     setSearch("");
     setResults([]);
 
-    // Activar categoría
-    setActiveCategory(item.category);
+    // Activar categoría y abrir modal
+    setSelectedCategoryKey(item.category);
+    setIsModalOpen(true);
 
-    // Esperar a que DOM renderice
+    // Esperar a que el modal termine la animación de entrada (450ms)
     setTimeout(() => {
       const element = document.getElementById(itemId);
       if (element) {
@@ -86,7 +87,7 @@ export function SearchBubble() {
           setHighlightedItemId(null);
         }, 3300);
       }
-    }, 300);
+    }, 400);
   };
 
   return (

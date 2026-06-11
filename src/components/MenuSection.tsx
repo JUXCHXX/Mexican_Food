@@ -2,7 +2,6 @@ import { motion } from "framer-motion";
 import { MenuCard, type MenuItem } from "./MenuCard";
 import { TalaveraDivider } from "./TalaveraDivider";
 import { getMeta } from "@/lib/menu-categories";
-import { useMenuContext } from "@/contexts/MenuContext";
 
 interface Props {
   id: string;
@@ -14,23 +13,9 @@ interface Props {
 export function MenuSection({ id, label, items, description }: Props) {
   const meta = getMeta(id);
   const Icon = meta.icon;
-  const { activeCategory } = useMenuContext();
-
-  // Si hay categoría activa seleccionada y no es esta, no renderizar
-  if (activeCategory !== null && activeCategory !== id) {
-    return null;
-  }
 
   return (
-    <motion.section
-      key={id}
-      id={id}
-      initial={activeCategory ? { opacity: 0, y: 30 } : undefined}
-      animate={activeCategory ? { opacity: 1, y: 0 } : undefined}
-      exit={activeCategory ? { opacity: 0, y: 30 } : undefined}
-      transition={activeCategory ? { duration: 0.4, ease: [0.22, 1, 0.36, 1] } : undefined}
-      className="relative scroll-mt-24 py-16 md:py-20"
-    >
+    <section id={id} className="relative scroll-mt-24 py-16 md:py-20">
       {/* Header image banner */}
       <div className="relative mx-auto mb-10 max-w-7xl overflow-hidden rounded-3xl border border-arena/10">
         <div
@@ -62,6 +47,6 @@ export function MenuSection({ id, label, items, description }: Props) {
           <MenuCard key={`${id}-${item.name}-${i}`} item={item} index={i} categoryId={id} />
         ))}
       </div>
-    </motion.section>
+    </section>
   );
 }
