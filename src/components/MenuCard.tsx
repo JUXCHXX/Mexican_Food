@@ -36,7 +36,17 @@ function PriceBlock({ item }: { item: MenuItem }) {
   return <div className="font-display text-sombrero text-2xl leading-none">{fmt(p)}</div>;
 }
 
-export function MenuCard({ item, index, categoryId }: { item: MenuItem; index: number; categoryId: string }) {
+export function MenuCard({
+  item,
+  index,
+  categoryId,
+  variant = "default",
+}: {
+  item: MenuItem;
+  index: number;
+  categoryId: string;
+  variant?: "default" | "modal";
+}) {
   const [expanded, setExpanded] = useState(false);
   const [isGlowing, setIsGlowing] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
@@ -73,6 +83,69 @@ export function MenuCard({ item, index, categoryId }: { item: MenuItem; index: n
     ? `0 0 40px ${isFadingOut ? "rgba(242, 178, 51, 0.2)" : "rgba(242, 178, 51, 0.8)"}`
     : "none";
 
+  // Variante MODAL
+  if (variant === "modal") {
+    const getPrice = (): string => {
+      if (item.price) return fmt(item.price);
+      if (item.price_small && item.price_large)
+        return `${fmt(item.price_small)} - ${fmt(item.price_large)}`;
+      if (item.price_large) return fmt(item.price_large);
+      return "N/A";
+    };
+
+    return (
+      <motion.button
+        id={itemId}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: Math.min(index * 0.05, 0.4) }}
+        whileHover={{ scale: 1.02 }}
+        className="group relative flex flex-col h-40 md:h-48 overflow-hidden rounded-2xl border border-arena/10 transition-all duration-300"
+        style={{
+          boxShadow: isGlowing ? glowShadow : undefined,
+        }}
+      >
+        {/* Fondo degradado / Color sólido */}
+        <div className="absolute inset-0 bg-gradient-to-br from-gris/60 via-gris/40 to-carbon" />
+        <div className="absolute inset-0 group-hover:bg-black/10 transition-colors duration-300" />
+
+        {/* Contenido */}
+        <div className="relative flex flex-col h-full p-4 md:p-5">
+          {/* Nombre - Arriba */}
+          <h3 className="font-display text-lg md:text-xl text-arena font-semibold leading-tight line-clamp-2">
+            {item.name}
+          </h3>
+
+          {/* Descripción - Centro */}
+          {item.description && (
+            <p className="text-xs md:text-sm text-arena/60 font-body mt-2 flex-1 line-clamp-2">
+              {item.description}
+            </p>
+          )}
+
+          {/* Precio - Abajo derecha */}
+          <div className="mt-auto flex items-end justify-between gap-3">
+            <div className="flex gap-1">
+              {item.spicy && (
+                <Flame className="h-3 w-3 md:h-4 md:w-4 text-tradicional" />
+              )}
+              {item.isNew && (
+                <Sparkles className="h-3 w-3 md:h-4 md:w-4 text-jalapeno" />
+              )}
+              {item.popular && (
+                <Star className="h-3 w-3 md:h-4 md:w-4 text-sombrero" />
+              )}
+            </div>
+            <div className="font-display text-sombrero text-lg md:text-xl font-semibold whitespace-nowrap">
+              {getPrice()}
+            </div>
+          </div>
+        </div>
+      </motion.button>
+    );
+  }
+
+  // Variante DEFAULT (original)
   return (
     <motion.article
       id={itemId}

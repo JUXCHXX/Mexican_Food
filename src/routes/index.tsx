@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import menuData from "@/data/menu.json";
 import { HeroSection } from "@/components/HeroSection";
 import { CategoryNav } from "@/components/CategoryNav";
-import { MenuSection } from "@/components/MenuSection";
 import { Footer } from "@/components/Footer";
 import { ChatBubble } from "@/components/ChatBubble";
 import { SearchBubble } from "@/components/SearchBubble";
@@ -28,7 +27,9 @@ type MenuShape = {
 
 function Index() {
   const data = menuData as unknown as MenuShape;
-  const categories = Object.entries(data.menu).filter(([k]) => k !== "build_your_own_combo").map(([key, val]) => ({ key, label: val.label }));
+  const categories = Object.entries(data.menu)
+    .filter(([k]) => k !== "build_your_own_combo")
+    .map(([key, val]) => ({ key, label: val.label }));
 
   const scrollToMenu = () => {
     const first = categories[0]?.key;
@@ -38,21 +39,12 @@ function Index() {
   return (
     <MenuProvider>
       <MenuModal />
-      <main className="min-h-screen bg-carbon">
+      <main className="min-h-screen bg-carbon flex flex-col">
         <HeroSection onCtaClick={scrollToMenu} />
         <CategoryNav categories={categories} />
 
-        <div className="relative">
-          {Object.entries(data.menu).filter(([k]) => k !== "build_your_own_combo").map(([key, section]) => (
-            <MenuSection
-              key={key}
-              id={key}
-              label={section.label}
-              description={section.description}
-              items={section.items ?? []}
-            />
-          ))}
-        </div>
+        {/* Espaciador para empujar footer abajo */}
+        <div className="flex-1" />
 
         <Footer />
         <ChatBubble />
