@@ -29,10 +29,10 @@
     "nachos": {
       "label": "Nachos",
       "items": [
-        { "name": "Nachos - Cheese", "price": 7.99 },
-        { "name": "Nachos - Bean", "price": 6.99 },
-        { "name": "Nachos - Ground Beef", "price": 10.75 },
-        { "name": "Nachos - Shredded Chicken", "price": 10.75 },
+        { "name": "Nachos - Cheese", "description": "Crispy tortilla chips smothered in our creamy house cheese dip.", "price": 7.99 },
+        { "name": "Nachos - Bean", "description": "Tortilla chips loaded with seasoned refried beans.", "price": 6.99 },
+        { "name": "Nachos - Ground Beef", "description": "Chips topped with seasoned ground beef and melted cheese.", "price": 10.75 },
+        { "name": "Nachos - Shredded Chicken", "description": "Crispy chips piled high with tender shredded chicken and cheese.", "price": 10.75 },
         { "name": "Nachos Jalisco", "description": "Chicken, beef, six shrimp and Mexican sausage. Served with onions, bell peppers, tomatoes, and cheese.", "price": 17.99, "spicy": true },
         { "name": "Nachos Supreme", "description": "Cheese nachos with assorted topping of ground beef, chicken, and refried beans. All covered with lettuce, tomatoes, and sour cream.", "price": 14.99 },
         { "name": "Nachos Vallarta", "description": "Polish sausage, grilled chicken, and grilled beef. Nacho chips topped with rice, cheese dip, lettuce, sour cream, pico de gallo, and guacamole.", "price": 17.99 },
@@ -187,7 +187,7 @@
         { "name": "Huevos con Chorizo", "description": "Two eggs with Mexican sausage, rice, and tortillas.", "price": 13.99, "spicy": true },
         { "name": "Huevos Rancheros", "description": "Two eggs topped with ranchero sauce. Served with rice, beans, and tortillas.", "price": 12.99, "spicy": true },
         { "name": "Chimichanga", "description": "Flour tortilla filled with beef tips or shredded chicken, then lightly deep fried to a golden brown and topped with cheese sauce. Served with rice, beans, lettuce, pico de gallo, guacamole, and sour cream.", "price": 12.99 },
-        { "name": "Chimichanga (Shrimp)", "price": 13.99 },
+        { "name": "Chimichanga (Shrimp)", "description": "Golden deep-fried flour tortilla stuffed with seasoned shrimp and cheese dip.", "price": 13.99 },
         { "name": "Chimichanga Texana", "description": "Chimichanga with shrimp, grilled chicken, and steak cooked with peppers and onions. Served with rice, beans, lettuce, sour cream, guacamole, and pico de gallo, topped with cheese dip.", "price": 14.99, "spicy": true },
         { "name": "El Rey Special", "description": "Six shrimp and a grilled chicken breast. Served with rice, beans, guacamole salad, and tortillas.", "price": 21.99, "spicy": true },
         { "name": "Taquitos Mexicanos", "description": "Two beef and two chicken taquitos lightly deep fried. Served with lettuce, tomatoes, guacamole, and sour cream.", "price": 12.99 },
@@ -203,7 +203,7 @@
       "label": "A La Carte",
       "notes": ["Chips and salsa are not included"],
       "items": [
-        { "name": "Taco (Ground beef or shredded chicken)", "price": 2.50, "price_3": 7.50 },
+        { "name": "Taco (Ground beef or shredded chicken)", "description": "Classic soft taco with your choice of ground beef or shredded chicken.", "price": 2.50, "price_3": 7.50 },
         { "name": "Taco Grilled Chicken", "description": "Shredded cheese and lettuce.", "price": 3.75 },
         { "name": "Taco de Carne Asada", "description": "Served with onions and cilantro.", "price": 3.75 },
         { "name": "Taco de Carnitas", "description": "Served with onion and cilantro.", "price": 3.75, "spicy": true },
@@ -212,7 +212,7 @@
         { "name": "Shrimp Taco", "description": "Served with lettuce, pico de gallo, and shredded cheese.", "price": 4.99, "spicy": true },
         { "name": "Fish Taco", "description": "Served with lettuce, pico de gallo, and shredded cheese.", "price": 4.99, "spicy": true },
         { "name": "Taco Polish Sausage", "description": "Soft taco filled with savory grilled Polish sausage.", "price": 2.99 },
-        { "name": "Burrito (Ground beef or shredded chicken)", "price": 6.25 },
+        { "name": "Burrito (Ground beef or shredded chicken)", "description": "Flour tortilla wrapped around seasoned ground beef or shredded chicken.", "price": 6.25 },
         { "name": "Bean Burrito", "description": "Red sauce on top.", "price": 4.99 },
         { "name": "Burrito (Steak, grilled chicken or shrimp)", "description": "Red sauce on top.", "price": 7.99, "spicy": true },
         { "name": "Enchilada (Ground beef or shredded chicken)", "description": "Red sauce on top.", "price": 3.25 },
@@ -225,45 +225,45 @@
         { "name": "Chimichanga Polish Sausage", "description": "Cheese dip on top.", "price": 6.25 },
         { "name": "Tostada", "description": "Ground beef, cheese dip, shredded cheese, lettuce, tomatoes, and sour cream.", "price": 5.50 },
         { "name": "Tostada de Chorizo", "description": "Lettuce, sour cream, tomatoes, and shredded cheese.", "price": 5.99 },
-        { "name": "Tostada (Steak, grilled chicken or shrimp)", "price": 6.99, "spicy": true },
+        { "name": "Tostada (Steak, grilled chicken or shrimp)", "description": "Crispy tostada topped with your choice of steak, grilled chicken, or shrimp.", "price": 6.99, "spicy": true },
         { "name": "Chalupa", "description": "Beans, lettuce, guacamole, tomatoes, and shredded cheese.", "price": 3.99 },
         { "name": "Quesadilla (Shredded beef or chicken)", "description": "Cooked with peppers, onions, and tomatoes, with shredded cheese inside.", "price": 6.99 },
         { "name": "Spinach Quesadilla", "description": "Spinach and shredded cheese inside.", "price": 5.99 },
-        { "name": "Quesadilla Grande (Shredded chicken or shredded beef)", "price": 8.99, "spicy": true },
+        { "name": "Quesadilla Grande (Shredded chicken or shredded beef)", "description": "Large flour tortilla filled with shredded chicken or beef and melted cheese.", "price": 8.99, "spicy": true },
         { "name": "Grilled Quesadilla (Grilled steak or chicken)", "description": "With shredded cheese inside.", "price": 8.99, "price_shrimp": 9.99, "spicy": true },
         { "name": "Quesadilla Grande (Steak or grilled chicken)", "description": "With shredded cheese inside.", "price": 11.25, "price_shrimp": 12.25, "spicy": true },
         { "name": "Cheese Quesadilla", "description": "Flour tortilla filled with melted cheese, crispy and golden.", "price": 3.99 },
-        { "name": "Order Grilled Shrimp (15)", "price": 12.99, "spicy": true },
+        { "name": "Order Grilled Shrimp (15)", "description": "Fifteen juicy grilled shrimp seasoned with our special Mexican spices.", "price": 12.99, "spicy": true },
         { "name": "Tamale", "description": "Traditional corn masa tamale filled with seasoned meat.", "price": 4.25 },
-        { "name": "Order Steak or Grilled Chicken", "price": 11.99 }
+        { "name": "Order Steak or Grilled Chicken", "description": "Tender grilled steak or seasoned chicken breast, cooked to perfection.", "price": 11.99 }
       ]
     },
     "side_orders": {
       "label": "Side Orders",
       "items": [
-        { "name": "Mexican Rice", "price": 3.50 },
-        { "name": "Refried Beans", "price": 3.50 },
-        { "name": "French Fries", "price": 4.25 },
-        { "name": "Hash Brown", "price": 4.25 },
-        { "name": "Shredded Cheese", "price": 2.25 },
-        { "name": "Chiles Toreados", "price": 3.99 },
-        { "name": "Tomatillo Sauce", "price": 2.99 },
-        { "name": "Pico de Gallo", "price": 1.99 },
-        { "name": "California Vegetables", "price": 5.99 },
-        { "name": "Bell Peppers", "price": 1.99 },
-        { "name": "Grilled Onions", "price": 1.99 },
-        { "name": "Tortillas (3)", "price": 1.35 },
-        { "name": "Small Sour Cream", "price": 1.99 },
-        { "name": "Tomatoes", "price": 0.99 },
-        { "name": "Jalapeños", "price": 1.99 },
-        { "name": "Cilantro", "price": 0.99 },
-        { "name": "Onions", "price": 0.99 },
-        { "name": "Lettuce", "price": 0.99 },
-        { "name": "Sliced Avocado (1)", "price": 3.99 },
-        { "name": "Large Sauce To-Go", "price": 3.99 },
-        { "name": "Mushrooms", "price": 4.99 },
-        { "name": "Chorizo", "price": 6.99 },
-        { "name": "Polish Sausage", "price": 6.99 }
+        { "name": "Mexican Rice", "description": "Fluffy seasoned rice cooked with tomatoes and spices.", "price": 3.50 },
+        { "name": "Refried Beans", "description": "Smooth and creamy traditional Mexican refried pinto beans.", "price": 3.50 },
+        { "name": "French Fries", "description": "Golden crispy French fries, perfectly salted.", "price": 4.25 },
+        { "name": "Hash Brown", "description": "Crispy shredded potato patty, golden on the outside.", "price": 4.25 },
+        { "name": "Shredded Cheese", "description": "Freshly shredded Mexican blend cheese.", "price": 2.25 },
+        { "name": "Chiles Toreados", "description": "Charred whole jalapeños with onions, a spicy Mexican classic.", "price": 3.99 },
+        { "name": "Tomatillo Sauce", "description": "Tangy green tomatillo sauce with a smoky kick.", "price": 2.99 },
+        { "name": "Pico de Gallo", "description": "Fresh diced tomatoes, onions, cilantro, and jalapeño.", "price": 1.99 },
+        { "name": "California Vegetables", "description": "Steamed broccoli, cauliflower, and carrots, lightly seasoned.", "price": 5.99 },
+        { "name": "Bell Peppers", "description": "Freshly sliced colorful bell peppers.", "price": 1.99 },
+        { "name": "Grilled Onions", "description": "Sweet caramelized onions grilled to golden perfection.", "price": 1.99 },
+        { "name": "Tortillas (3)", "description": "Three warm soft flour or corn tortillas.", "price": 1.35 },
+        { "name": "Small Sour Cream", "description": "Cool and creamy sour cream on the side.", "price": 1.99 },
+        { "name": "Tomatoes", "description": "Fresh sliced ripe tomatoes.", "price": 0.99 },
+        { "name": "Jalapeños", "description": "Fresh or pickled jalapeño peppers for extra heat.", "price": 1.99 },
+        { "name": "Cilantro", "description": "Fresh fragrant cilantro leaves.", "price": 0.99 },
+        { "name": "Onions", "description": "Fresh diced or sliced white onions.", "price": 0.99 },
+        { "name": "Lettuce", "description": "Crisp shredded lettuce.", "price": 0.99 },
+        { "name": "Sliced Avocado (1)", "description": "One perfectly ripe sliced avocado.", "price": 3.99 },
+        { "name": "Large Sauce To-Go", "description": "A large container of our house red sauce to take home.", "price": 3.99 },
+        { "name": "Mushrooms", "description": "Sautéed seasoned mushrooms, rich and savory.", "price": 4.99 },
+        { "name": "Chorizo", "description": "Spicy Mexican pork sausage, bold and flavorful.", "price": 6.99 },
+        { "name": "Polish Sausage", "description": "Smoky grilled Polish sausage with rich savory flavor.", "price": 6.99 }
       ]
     },
     "vegetarian": {
@@ -310,20 +310,20 @@
         "Ground beef and shredded chicken, cooked with bell peppers, onion and tomatoes."
       ],
       "items": [
-        { "id": 1, "name": "One burrito and one taco.", "price_ref": 7.50 },
-        { "id": 2, "name": "One beef taco, rice, and beans.", "price_ref": 7.50 },
-        { "id": 3, "name": "One quesadilla and one enchilada.", "price_ref": 7.50 },
-        { "id": 4, "name": "Mini taco salad.", "price_ref": 7.50 },
-        { "id": 5, "name": "One burrito, rice, and beans.", "price_ref": 7.50 },
-        { "id": 6, "name": "Enchilada, rice, and beans.", "price_ref": 7.50 },
-        { "id": 7, "name": "Cheese quesadilla, rice, and beans.", "price_ref": 7.50 },
-        { "id": 8, "name": "Cheese quesadilla with French fries.", "price_ref": 7.50 },
-        { "id": 9, "name": "Chicken fingers with French fries.", "price_ref": 7.50 },
-        { "id": 10, "name": "Cheeseburger with French fries.", "price_ref": 7.50 },
-        { "id": 11, "name": "Chicken nuggets with French fries.", "price_ref": 7.50 },
-        { "id": 12, "name": "Cheese sticks with French Fries.", "price_ref": 7.50 },
-        { "id": 13, "name": "Shredded chicken or ground beef nachos.", "price_ref": 7.50 },
-        { "id": 14, "name": "Grilled chicken, steak or six shrimp with rice and cheese dip.", "price": 10.99, "spicy": true }
+        { "id": 1, "name": "One burrito and one taco.", "description": "A classic kid's combo: one soft burrito and one taco.", "price_ref": 7.50 },
+        { "id": 2, "name": "One beef taco, rice, and beans.", "description": "A hearty kid's plate with a beef taco, rice, and beans.", "price_ref": 7.50 },
+        { "id": 3, "name": "One quesadilla and one enchilada.", "description": "Cheesy quesadilla paired with a saucy enchilada.", "price_ref": 7.50 },
+        { "id": 4, "name": "Mini taco salad.", "description": "A fun mini taco salad bowl, perfect for little ones.", "price_ref": 7.50 },
+        { "id": 5, "name": "One burrito, rice, and beans.", "description": "A filling kid's plate with a burrito, rice, and beans.", "price_ref": 7.50 },
+        { "id": 6, "name": "Enchilada, rice, and beans.", "description": "A saucy enchilada with rice and creamy refried beans.", "price_ref": 7.50 },
+        { "id": 7, "name": "Cheese quesadilla, rice, and beans.", "description": "Melty cheese quesadilla served with rice and beans.", "price_ref": 7.50 },
+        { "id": 8, "name": "Cheese quesadilla with French fries.", "description": "Golden cheese quesadilla served with crispy French fries.", "price_ref": 7.50 },
+        { "id": 9, "name": "Chicken fingers with French fries.", "description": "Crispy chicken tenders with golden French fries.", "price_ref": 7.50 },
+        { "id": 10, "name": "Cheeseburger with French fries.", "description": "Juicy cheeseburger with melted cheese and French fries.", "price_ref": 7.50 },
+        { "id": 11, "name": "Chicken nuggets with French fries.", "description": "Tender chicken nuggets with crispy French fries.", "price_ref": 7.50 },
+        { "id": 12, "name": "Cheese sticks with French Fries.", "description": "Golden fried cheese sticks with crispy French fries.", "price_ref": 7.50 },
+        { "id": 13, "name": "Shredded chicken or ground beef nachos.", "description": "Cheesy nachos topped with shredded chicken or ground beef.", "price_ref": 7.50 },
+        { "id": 14, "name": "Grilled chicken, steak or six shrimp with rice and cheese dip.", "description": "Grilled chicken, steak, or six shrimp with rice and cheese dip.", "price": 10.99, "spicy": true }
       ]
     },
     "lunch": {
@@ -355,7 +355,7 @@
         { "name": "Milanesa de Pollo", "description": "Breaded chicken breast served with French fries, jalapeño, lettuce, avocado, and pico de gallo.", "price": 21.99, "spicy": true },
         { "name": "California (Lunch)", "description": "Grilled chicken strips with cheese dip on top. Served with rice, beans, and tortillas.", "price": 14.99 },
         { "name": "Veracruz (Lunch)", "description": "Six shrimp, two shredded chicken enchiladas with green sauce. Served with rice, lettuce, pico de gallo, sour cream, and guacamole.", "price": 15.99, "spicy": true },
-        { "name": "Chicken Soup (Lunch)", "price": 12.99 },
+        { "name": "Chicken Soup (Lunch)", "description": "Warm Mexican-style chicken soup, comforting and flavorful.", "price": 12.99 },
         { "name": "Fajita Taco Salad (Lunch)", "description": "Fajita-style chicken or steak with grilled onions and bell peppers, cheese dip lettuce, sour cream, guacamole, tomatoes, and shredded cheese.", "price": 12.99 },
         { "name": "Fajita Quesadilla (Lunch)", "description": "Fajita-style beef or chicken cooked with onions, bell peppers, and tomatoes. Served with rice, beans, lettuce, pico de gallo, sour cream, and guacamole.", "price": 12.99 },
         { "name": "Burrito Special (Lunch)", "description": "One burrito filled with your choice of ground beef or shredded chicken. Topped with lettuce, tomatoes, and sour cream.", "price": 8.99 },
@@ -379,20 +379,20 @@
     "soft_drinks": {
       "label": "Soft Drinks",
       "items": [
-        { "name": "Coke, Diet Coke, Zero Coke, Sprite, Fanta, Dr Pepper, Lemonade", "price": 3.29 },
-        { "name": "Sweet or Unsweet Tea", "price": 3.29 },
+        { "name": "Coke, Diet Coke, Zero Coke, Sprite, Fanta, Dr Pepper, Lemonade", "description": "Your choice of refreshing fountain drinks with free refills.", "price": 3.29 },
+        { "name": "Sweet or Unsweet Tea", "description": "Classic Southern-style sweet or unsweet iced tea with free refills.", "price": 3.29 },
         { "name": "Jarritos", "description": "No refills.", "price": 3.75 },
-        { "name": "Coffee", "price": 3.29 },
+        { "name": "Coffee", "description": "Rich hot coffee, perfect to finish your meal.", "price": 3.29 },
         { "name": "Milk", "description": "No refills.", "price": 3.50 },
         { "name": "Roy Rogers", "description": "Ginger ale with grenadine and a maraschino cherry.", "price": 3.99 },
         { "name": "Shirley Temple", "description": "Sprite with grenadine and a maraschino cherry, kids' favorite.", "price": 3.99 },
-        { "name": "Agua de Horchata y Jamaica", "price": 4.99 }
+        { "name": "Agua de Horchata y Jamaica", "description": "Traditional Mexican rice water or hibiscus flower agua fresca.", "price": 4.99 }
       ]
     },
     "daiquiris": {
       "label": "Daiquiris",
       "items": [
-        { "name": "Daiquiri (Peach, Strawberry or Piña Colada)", "price_regular": 6.25 }
+        { "name": "Daiquiri (Peach, Strawberry or Piña Colada)", "description": "Frozen blended daiquiri in peach, strawberry, or piña colada flavor.", "price_regular": 6.25 }
       ]
     },
     "margaritas": {
@@ -424,6 +424,7 @@
         },
         {
           "name": "Texas Margaritas",
+          "description": "Bold on-the-rocks margaritas with premium tequila, Texas-sized and strong.",
           "prices": {
             "regular_on_the_rocks": 10.99,
             "jumbo_on_the_rocks": 13.99,
@@ -440,40 +441,42 @@
       "items": [
         {
           "name": "Bud Light (Draft)",
+          "description": "Ice-cold Bud Light on draft, light and refreshing.",
           "prices": { "regular_12oz": 3.25, "mug_32oz": 6.99, "pitcher": 11.99 }
         },
         {
           "name": "Dos Equis XX (Draft)",
+          "description": "Smooth and crisp Dos Equis XX lager on draft.",
           "prices": { "regular_12oz": 2.99, "mug_32oz": 7.99, "pitcher": 13.99 }
         },
-        { "name": "Domestic Beers (Bud Light, Budweiser, Miller Lite, Michelob Light)", "price": 4.25 },
-        { "name": "Imported Beers (Corona, Tecate, Dos Equis XX, Negra Modelo, Pacífico)", "price": 5.89 },
+        { "name": "Domestic Beers (Bud Light, Budweiser, Miller Lite, Michelob Light)", "description": "Your choice of classic American domestic beers, ice cold.", "price": 4.25 },
+        { "name": "Imported Beers (Corona, Tecate, Dos Equis XX, Negra Modelo, Pacífico)", "description": "Premium imported Mexican and international beers served ice cold.", "price": 5.89 },
         { "name": "Micheladas", "description": "Mexican beer mixed with lime juice, hot sauce, and spices.", "price": 8.99 }
       ]
     },
     "mixed_drinks": {
       "label": "Mixed Drinks",
       "items": [
-        { "name": "Amaretto Sour", "price": 7.99 },
-        { "name": "Bloody Mary", "price": 7.99 },
-        { "name": "Bourbon and Coke", "price": 7.99 },
-        { "name": "Cuba Libre", "price": 7.99 },
-        { "name": "Tequila Shot (Patron, Don Julio)", "price": 8.99 },
-        { "name": "Long Island Iced Tea", "price": 7.99 },
-        { "name": "Screw Driver", "price": 7.99 },
-        { "name": "Tequila Sunrise", "price": 7.99 },
-        { "name": "White Russian", "price": 7.99 },
-        { "name": "House Shot Tequila (Jose Cuervo, 1800, Jack Daniel's, Crown Royal)", "price": 7.99 }
+        { "name": "Amaretto Sour", "description": "Sweet amaretto shaken with sour mix for a smooth cocktail.", "price": 7.99 },
+        { "name": "Bloody Mary", "description": "Bold tomato juice cocktail with vodka and spicy seasonings.", "price": 7.99 },
+        { "name": "Bourbon and Coke", "description": "Smooth bourbon whiskey paired with ice-cold Coca-Cola.", "price": 7.99 },
+        { "name": "Cuba Libre", "description": "Classic rum and Coke with a squeeze of fresh lime.", "price": 7.99 },
+        { "name": "Tequila Shot (Patron, Don Julio)", "description": "Premium tequila shot from Patron or Don Julio, smooth and clean.", "price": 8.99 },
+        { "name": "Long Island Iced Tea", "description": "A powerful blend of five spirits with a splash of cola.", "price": 7.99 },
+        { "name": "Screw Driver", "description": "Crisp vodka mixed with fresh orange juice.", "price": 7.99 },
+        { "name": "Tequila Sunrise", "description": "Tequila with orange juice and grenadine for a stunning sunrise effect.", "price": 7.99 },
+        { "name": "White Russian", "description": "Smooth vodka, coffee liqueur, and cream over ice.", "price": 7.99 },
+        { "name": "House Shot Tequila (Jose Cuervo, 1800, Jack Daniel's, Crown Royal)", "description": "Your choice of house spirits: Cuervo, 1800, Jack Daniel's, or Crown Royal.", "price": 7.99 }
       ]
     },
     "wines": {
       "label": "Wines",
       "description": "Sangría, Burgundy, Zinfandel or Merlot.",
       "items": [
-        { "name": "Glass", "price": 5.25 },
-        { "name": "Carafe", "price": 14.99 },
-        { "name": "½ Carafe", "price": 8.75 },
-        { "name": "Wine-A-Rita", "price": 12.99 }
+        { "name": "Glass", "description": "A glass of your choice: Sangría, Burgundy, Zinfandel, or Merlot.", "price": 5.25 },
+        { "name": "Carafe", "description": "A full carafe of house wine: Sangría, Burgundy, Zinfandel, or Merlot.", "price": 14.99 },
+        { "name": "½ Carafe", "description": "A half carafe of your favorite house wine selection.", "price": 8.75 },
+        { "name": "Wine-A-Rita", "description": "A unique blend of wine and margarita — the best of both worlds.", "price": 12.99 }
       ]
     }
   }
