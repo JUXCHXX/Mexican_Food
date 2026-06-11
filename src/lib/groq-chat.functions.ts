@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import menuData from "@/data/menu.json";
+import { MENU_SUMMARY } from "@/lib/menu-summary";
 
 const MessageSchema = z.object({
   role: z.enum(["user", "assistant", "system"]),
@@ -22,7 +22,7 @@ REGLAS ESTRICTAS:
 - No inventes platillos ni precios. Si no existe en el menú, dilo claramente.
 
 MENÚ COMPLETO (fuente de verdad):
-${JSON.stringify(menuData)}`;
+${MENU_SUMMARY}`;
 
 interface GroqResponse {
   choices?: { message?: { content?: string } }[];
