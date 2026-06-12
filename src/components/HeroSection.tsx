@@ -9,6 +9,10 @@ export function HeroSection({ onCtaClick }: { onCtaClick: () => void }) {
   const y = useTransform(scrollY, [0, 600], [0, 150]);
   const opacity = useTransform(scrollY, [0, 400], [1, 0]);
 
+  const handleScroll = () => {
+    document.getElementById("category-nav")?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <section
       ref={ref}
@@ -59,7 +63,7 @@ export function HeroSection({ onCtaClick }: { onCtaClick: () => void }) {
           className="mt-8 flex flex-wrap items-center justify-center gap-3"
         >
           <button
-            onClick={onCtaClick}
+            onClick={handleScroll}
             className="rounded-full bg-sombrero px-7 py-3 font-[var(--font-heading)] font-bold text-carbon shadow-[0_15px_40px_-10px_rgba(242,178,51,0.6)] hover:scale-105 transition-transform"
           >
             Explorar el menú
@@ -76,7 +80,7 @@ export function HeroSection({ onCtaClick }: { onCtaClick: () => void }) {
       {/* Scroll-down indicator */}
       <button
         aria-label="Scroll down"
-        onClick={onCtaClick}
+        onClick={handleScroll}
         className="bounce-soft absolute bottom-8 left-1/2 -translate-x-1/2 text-sombrero"
       >
         <ChevronDown className="h-8 w-8" />

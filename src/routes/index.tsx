@@ -7,6 +7,7 @@ import { ChatBubble } from "@/components/ChatBubble";
 import { SearchBubble } from "@/components/SearchBubble";
 import { MenuModal } from "@/components/MenuModal";
 import { ReviewGateModal } from "@/components/ReviewGateModal";
+import { CookieBanner } from "@/components/CookieBanner";
 import { MenuProvider } from "@/contexts/MenuContext";
 
 export const Route = createFileRoute("/")({
@@ -33,8 +34,7 @@ function Index() {
     .map(([key, val]) => ({ key, label: val.label }));
 
   const scrollToMenu = () => {
-    const first = categories[0]?.key;
-    if (first) document.getElementById(first)?.scrollIntoView({ behavior: "smooth" });
+    document.getElementById("category-nav")?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
@@ -52,6 +52,7 @@ function Index() {
         <ChatBubble />
         <SearchBubble />
       </main>
+      <CookieBanner />
     </MenuProvider>
   );
 }

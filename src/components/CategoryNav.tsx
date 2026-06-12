@@ -89,6 +89,7 @@ export function CategoryNav({ categories }: { categories: Cat[] }) {
 
   return (
     <motion.nav
+      id="category-nav"
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5 }}

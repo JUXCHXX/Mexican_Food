@@ -56,10 +56,10 @@ export function ReviewGateModal() {
     // Check if cookie exists on mount
     if (hasReviewCookie()) return;
 
-    // Show modal after 1 minute
+    // Show modal after 15 seconds
     const timer = setTimeout(() => {
       setShow(true);
-    }, 60000);
+    }, 15000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -86,42 +86,42 @@ export function ReviewGateModal() {
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className="max-w-lg w-full bg-carbon border border-arena/20 rounded-3xl p-8"
+        className="w-full max-w-lg mx-auto max-h-[90vh] overflow-y-auto scrollbar-hide bg-carbon border border-arena/20 rounded-3xl p-5 md:p-8"
       >
         {/* Logo */}
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-4">
           <img
             src={fabianLogo}
             alt="Fabian's Mexican Restaurant"
-            className="h-24 object-contain"
+            className="h-16 md:h-24 object-contain"
           />
         </div>
 
         {/* Título */}
-        <h2 className="text-3xl font-display text-arena text-center mb-6">
+        <h2 className="text-2xl md:text-3xl font-display text-arena text-center mb-4">
           ¿Te gustó Fabian's?
         </h2>
 
         {/* Puntuación */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <span className="text-2xl font-bold text-arena">4.1</span>
-            <span className="text-2xl text-sombrero">★★★★☆</span>
+        <div className="text-center mb-6">
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <span className="text-xl md:text-2xl font-bold text-arena">4.1</span>
+            <span className="text-xl md:text-2xl text-sombrero">★★★★☆</span>
           </div>
-          <p className="text-sm text-arena/50">667 opiniones en Google</p>
+          <p className="text-xs md:text-sm text-arena/50">667 opiniones en Google</p>
         </div>
 
         {/* Reseñas */}
-        <div className="space-y-3 mb-8">
+        <div className="space-y-2 mb-6">
           {reviews.map((review) => (
             <div
               key={review.author}
-              className="bg-gris/30 rounded-2xl border border-arena/10 p-4"
+              className="bg-gris/30 rounded-2xl border border-arena/10 p-3"
             >
-              <div className="flex gap-3">
+              <div className="flex gap-2">
                 {/* Avatar con inicial */}
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-white font-bold text-sm ${getInitialColor(review.author)}`}
+                  className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center flex-shrink-0 text-white font-bold text-xs md:text-sm ${getInitialColor(review.author)}`}
                 >
                   {review.author[0].toUpperCase()}
                 </div>
@@ -129,20 +129,22 @@ export function ReviewGateModal() {
                 {/* Contenido de la reseña */}
                 <div className="flex-1 min-w-0">
                   {/* Nombre y badge */}
-                  <div className="flex items-baseline gap-2 flex-wrap mb-1">
-                    <span className="font-semibold text-arena text-sm">
+                  <div className="flex items-baseline gap-1 flex-wrap mb-0.5">
+                    <span className="font-semibold text-arena text-xs md:text-sm">
                       {review.author}
                     </span>
                     <span className="text-xs text-arena/40">{review.badge}</span>
                   </div>
 
                   {/* Estrellas */}
-                  <div className="text-sm text-sombrero mb-1">
+                  <div className="text-xs md:text-sm text-sombrero mb-0.5">
                     {"⭐".repeat(review.stars)}
                   </div>
 
-                  {/* Texto de reseña */}
-                  <p className="text-sm text-arena/70 italic">{review.text}</p>
+                  {/* Texto de reseña con line-clamp */}
+                  <p className="text-xs md:text-sm text-arena/70 italic line-clamp-3">
+                    {review.text}
+                  </p>
                 </div>
               </div>
             </div>
@@ -154,7 +156,7 @@ export function ReviewGateModal() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={handleGoogleClick}
-          className="w-full bg-sombrero text-carbon font-bold rounded-2xl py-4 text-lg mb-3 transition-all duration-300 hover:shadow-lg hover:shadow-sombrero/50"
+          className="w-full bg-sombrero text-carbon font-bold rounded-2xl py-3 text-base md:text-lg mb-3 transition-all duration-300 hover:shadow-lg hover:shadow-sombrero/50"
         >
           ⭐ Calificar en Google
         </motion.button>
@@ -166,7 +168,7 @@ export function ReviewGateModal() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
             onClick={handleConfirm}
-            className="w-full border border-arena/30 text-arena/60 hover:text-arena hover:border-arena/50 rounded-2xl py-3 text-lg font-semibold transition-all duration-300"
+            className="w-full border border-arena/30 text-arena/60 hover:text-arena hover:border-arena/50 rounded-2xl py-3 text-base md:text-lg font-semibold transition-all duration-300"
           >
             Ya califiqué, ver el menú →
           </motion.button>
