@@ -35,16 +35,12 @@ export function MyOrdersBubble() {
   return (
     <div
       className="fixed z-40"
-      style={
-        position
-          ? { left: position.left, top: position.top }
-          : { right: "5.5rem", bottom: "1.25rem" }
-      }
+      style={position ? { left: position.left, top: position.top } : { right: "1rem", top: "6rem" }}
     >
       {showHint && (
-        <div className="absolute bottom-20 right-0 w-56 rounded-2xl rounded-br-sm border border-jalapeno/40 bg-gris px-4 py-2.5 text-sm text-arena shadow-2xl">
+        <div className="absolute right-0 top-20 w-56 rounded-2xl rounded-tr-sm border border-jalapeno/40 bg-gris px-4 py-2.5 text-sm text-arena shadow-2xl">
           ¿Ya hiciste un pedido? Revisa el estado aquí.
-          <div className="absolute -bottom-1.5 right-6 h-3 w-3 rotate-45 border-b border-r border-jalapeno/40 bg-gris" />
+          <div className="absolute -top-1.5 right-6 h-3 w-3 rotate-45 border-l border-t border-jalapeno/40 bg-gris" />
         </div>
       )}
       <button

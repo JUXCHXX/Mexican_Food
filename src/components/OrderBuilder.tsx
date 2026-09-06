@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Check, ChevronDown, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
+import { Check, ChevronDown, Minus, Plus, ShoppingBag, ShoppingCart, Trash2 } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { getMeta } from "@/lib/menu-categories";
 import { resolvePrice } from "@/components/MenuCard";
 import { ALCOHOL_CATEGORY_KEYS, calculateOrderTax, ORDER_TAX_RATE } from "@/lib/order-tax";
@@ -106,6 +107,7 @@ export function OrderBuilder({
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [categoryOpen, setCategoryOpen] = useState(false);
   const section = menuSections[category];
 
   useEffect(() => {
@@ -218,7 +220,6 @@ export function OrderBuilder({
       return;
     }
     localStorage.setItem("fabians_customer_phone", customerPhone.trim());
-    localStorage.setItem("fabians_customer_phone", customerPhone.trim());
     onComplete(data as OrderResult);
     // Future SMS updates require explicit opt-in consent before any automated message (TCPA).
   };
@@ -233,7 +234,10 @@ export function OrderBuilder({
               <button
                 key={key}
                 type="button"
-                onClick={() => setCategory(key)}
+                onClick={() => {
+                  setCategory(key);
+                  setCategoryOpen(true);
+                }}
                 aria-label={`${language === "es" ? "Ver categoría" : "View category"}: ${value.label}`}
                 aria-pressed={key === category}
                 className={`flex min-h-24 flex-col items-center justify-center gap-2 rounded-2xl border p-3 text-center text-xs font-semibold transition ${key === category ? "border-sombrero bg-sombrero text-carbon shadow-[0_8px_28px_rgba(242,178,51,0.2)]" : "border-arena/15 bg-gris/50 text-arena hover:border-sombrero/60"}`}
@@ -260,61 +264,79 @@ export function OrderBuilder({
               }}
               className="flex w-full items-center justify-between rounded-2xl border border-sombrero/60 bg-sombrero px-4 py-3 text-left font-bold text-carbon shadow-xl"
             >
-              <span>
-                {language === "es"
-                  ? `Ver pedido (${cart.reduce((sum, item) => sum + item.quantity, 0)} ítems)`
-                  : `View order (${cart.reduce((sum, item) => sum + item.quantity, 0)} items)`}
+              <span className="inline-flex items-center gap-2">
+                <ShoppingCart className="h-5 w-5" /> Checkout
               </span>
               <span>
-                ${(subtotal + tax + surcharge).toFixed(2)} · Checkout{" "}
+                {cart.reduce((sum, item) => sum + item.quantity, 0)} · $
+                {(subtotal + tax + surcharge).toFixed(2)}{" "}
                 <ChevronDown className="ml-1 inline h-4 w-4" />
               </span>
             </button>
           </div>
         )}
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {(section?.items ?? []).map((item) => {
-            const slug = getMenuItemSlug(category, item.name);
-            const soldOut = unavailable[slug];
-            const options = getPriceOptions(item);
-            const priceSummary = resolvePrice(item);
-            return (
-              <article
-                key={slug}
-                className={`relative rounded-2xl border border-arena/10 bg-gris/50 p-4 ${soldOut ? "opacity-60" : ""}`}
-              >
-                {soldOut && (
-                  <div className="absolute right-3 top-3 rounded-full bg-tradicional px-2 py-1 text-[10px] font-bold uppercase text-arena">
-                    {t.soldout}
-                  </div>
-                )}
-                <h3 className="pr-14 font-display text-lg text-arena">{item.name}</h3>
-                <p className="mt-2 line-clamp-3 text-xs leading-relaxed text-arena/60">
-                  {item.description}
-                </p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {options.map((option) => (
-                    <button
-                      disabled={soldOut}
-                      key={`${slug}-${option.label}`}
-                      type="button"
-                      onClick={() => add(item, option)}
-                      className="rounded-full border border-sombrero/50 px-3 py-1.5 text-xs font-semibold text-sombrero hover:bg-sombrero hover:text-carbon disabled:cursor-not-allowed disabled:border-arena/20 disabled:text-arena/40"
-                    >
-                      {option.label} ${option.price.toFixed(2)}{" "}
-                      <Plus className="ml-1 inline h-3 w-3" />
-                    </button>
-                  ))}
-                  {!options.length && priceSummary && (
-                    <span className="text-sm font-semibold text-sombrero">
-                      {priceSummary.display}
-                    </span>
-                  )}
-                </div>
-              </article>
-            );
-          })}
-        </div>
+        <p className="rounded-2xl border border-arena/10 bg-gris/35 p-5 text-sm text-arena/60">
+          {language === "es"
+            ? "Elige una categoría para ver sus platos y agregarlos a tu pedido."
+            : "Choose a category to see its dishes and add them to your order."}
+        </p>
+        <Dialog open={categoryOpen} onOpenChange={setCategoryOpen}>
+          <DialogContent className="top-auto max-h-[88dvh] max-w-5xl translate-y-0 overflow-y-auto rounded-t-3xl border-arena/15 bg-carbon p-5 text-arena sm:top-1/2 sm:translate-y-[-50%] sm:rounded-3xl sm:p-7">
+            <DialogTitle className="pr-9 font-display text-3xl text-sombrero">
+              {section?.label}
+            </DialogTitle>
+            <p className="-mt-2 text-sm text-arena/60">
+              {language === "es"
+                ? "Agrega los platos y sus variantes a tu pedido."
+                : "Add dishes and their variants to your order."}
+            </p>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {(section?.items ?? []).map((item) => {
+                const slug = getMenuItemSlug(category, item.name);
+                const soldOut = unavailable[slug];
+                const options = getPriceOptions(item);
+                const priceSummary = resolvePrice(item);
+                return (
+                  <article
+                    key={slug}
+                    className={`relative rounded-2xl border border-arena/10 bg-gris/50 p-4 ${soldOut ? "opacity-60" : ""}`}
+                  >
+                    {soldOut && (
+                      <div className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-carbon/55 p-4">
+                        <span className="-rotate-12 rounded border-4 border-tradicional bg-carbon/90 px-4 py-2 text-center text-lg font-black uppercase tracking-[0.18em] text-tradicional">
+                          {t.soldout}
+                        </span>
+                      </div>
+                    )}
+                    <h3 className="font-display text-lg text-arena">{item.name}</h3>
+                    <p className="mt-2 line-clamp-3 text-xs leading-relaxed text-arena/60">
+                      {item.description}
+                    </p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {options.map((option) => (
+                        <button
+                          disabled={soldOut}
+                          key={`${slug}-${option.label}`}
+                          type="button"
+                          onClick={() => add(item, option)}
+                          className="rounded-full border border-sombrero/50 px-3 py-1.5 text-xs font-semibold text-sombrero hover:bg-sombrero hover:text-carbon disabled:cursor-not-allowed disabled:border-arena/20 disabled:text-arena/40"
+                        >
+                          {option.label} ${option.price.toFixed(2)}{" "}
+                          <Plus className="ml-1 inline h-3 w-3" />
+                        </button>
+                      ))}
+                      {!options.length && priceSummary && (
+                        <span className="text-sm font-semibold text-sombrero">
+                          {priceSummary.display}
+                        </span>
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </DialogContent>
+        </Dialog>
       </section>
       <aside
         id="order-checkout"

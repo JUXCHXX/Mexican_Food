@@ -21,6 +21,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import QRCode from "qrcode";
 import { getAllMenuItems, getMenuItemSlug } from "@/lib/menu-data";
 import { openOrderReceipt } from "@/components/OrderReceipt";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { getSupabase, ORDER_STATUSES, STATUS_LABELS, type OrderStatus } from "@/lib/supabase";
 
 export const Route = createFileRoute("/panel")({
@@ -36,6 +37,7 @@ type PanelOrder = {
   customer_phone: string;
   notes?: string | null;
   table_id: string | null;
+  tables?: { number: number } | null;
   status: OrderStatus;
   subtotal: number;
   tax: number;
@@ -247,12 +249,16 @@ function Dashboard({
   const supabase = getSupabase();
   const [now, setNow] = useState(() => Date.now());
   const [soundMuted, setSoundMuted] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<PanelOrder | null>(null);
+  const [orderHistory, setOrderHistory] = useState<
+    Array<{ status: OrderStatus; changed_at: string }>
+  >([]);
   const soundReady = audioUnlocked;
   const loadOrders = async () => {
     if (!supabase) return;
     const { data } = await supabase
       .from("orders")
-      .select("*,order_items(*)")
+      .select("*,order_items(*),tables(number)")
       .order("created_at", { ascending: false })
       .limit(300);
     setOrders((data ?? []) as PanelOrder[]);
@@ -280,6 +286,18 @@ function Dashboard({
     setOrders((current) =>
       current.map((item) => (item.id === order.id ? { ...item, status } : item)),
     );
+    setSelectedOrder((current) => (current?.id === order.id ? { ...current, status } : current));
+  };
+  const openOrder = async (order: PanelOrder) => {
+    setSelectedOrder(order);
+    setOrderHistory([]);
+    if (!supabase) return;
+    const { data } = await supabase
+      .from("order_status_history")
+      .select("status,changed_at")
+      .eq("order_id", order.id)
+      .order("changed_at", { ascending: true });
+    setOrderHistory((data ?? []) as Array<{ status: OrderStatus; changed_at: string }>);
   };
   const filtered = orders.filter((order) =>
     order.order_number.toLowerCase().includes(query.toLowerCase()),
@@ -415,6 +433,7 @@ function Dashboard({
                           key={order.id}
                           order={order}
                           onMove={move}
+                          onOpen={openOrder}
                           isOverdue={
                             order.status === "nuevo" &&
                             now - new Date(order.created_at).getTime() >= NEW_ORDER_ALERT_AFTER_MS
@@ -425,6 +444,12 @@ function Dashboard({
                 </section>
               ))}
             </div>
+            <OrderInvoiceDialog
+              order={selectedOrder}
+              history={orderHistory}
+              onOpenChange={(open) => !open && setSelectedOrder(null)}
+              onMove={move}
+            />
           </>
         )}
         {role === "super_admin" && active === "settings" && <SuperAdminSettings />}
@@ -437,12 +462,15 @@ function Dashboard({
 function OrderCard({
   order,
   onMove,
+  onOpen,
   isOverdue,
 }: {
   order: PanelOrder;
   onMove: (order: PanelOrder, status: OrderStatus) => Promise<void>;
+  onOpen: (order: PanelOrder) => void;
   isOverdue: boolean;
 }) {
+  const dragged = useRef(false);
   const next =
     ORDER_STATUSES[Math.min(ORDER_STATUSES.indexOf(order.status) + 1, ORDER_STATUSES.length - 1)];
   const print = () => openOrderReceipt(order);
@@ -450,15 +478,27 @@ function OrderCard({
     <article
       draggable
       onDragStart={(event) => {
+        dragged.current = true;
         event.dataTransfer.effectAllowed = "move";
         event.dataTransfer.setData("application/x-fabians-order", order.id);
+      }}
+      onDragEnd={() => window.setTimeout(() => (dragged.current = false), 0)}
+      onClick={() => {
+        if (!dragged.current) onOpen(order);
       }}
       className={`cursor-grab rounded-2xl border bg-carbon/70 p-3 active:cursor-grabbing ${isOverdue ? "new-order-overdue" : "border-arena/10"}`}
       aria-label={`${order.order_number}, ${STATUS_LABELS[order.status].es}${isOverdue ? ", pedido atrasado" : ""}`}
     >
       <div className="flex justify-between gap-2">
         <h3 className="font-bold text-sombrero">{order.order_number}</h3>
-        <button type="button" onClick={print} aria-label={`Imprimir comanda ${order.order_number}`}>
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            print();
+          }}
+          aria-label={`Imprimir comanda ${order.order_number}`}
+        >
           <Printer className="h-4 w-4 text-arena/60" />
         </button>
       </div>
@@ -479,7 +519,10 @@ function OrderCard({
         {next !== order.status && (
           <button
             type="button"
-            onClick={() => void onMove(order, next)}
+            onClick={(event) => {
+              event.stopPropagation();
+              void onMove(order, next);
+            }}
             aria-label={`${STATUS_LABELS[next].es} ${order.order_number}`}
             className="rounded-full bg-jalapeno px-3 py-1 text-xs text-arena"
           >
@@ -488,6 +531,142 @@ function OrderCard({
         )}
       </div>
     </article>
+  );
+}
+
+function OrderInvoiceDialog({
+  order,
+  history,
+  onOpenChange,
+  onMove,
+}: {
+  order: PanelOrder | null;
+  history: Array<{ status: OrderStatus; changed_at: string }>;
+  onOpenChange: (open: boolean) => void;
+  onMove: (order: PanelOrder, status: OrderStatus) => Promise<void>;
+}) {
+  if (!order) return null;
+  const next =
+    ORDER_STATUSES[Math.min(orderStatusIndex(order.status) + 1, ORDER_STATUSES.length - 1)];
+  return (
+    <Dialog open={Boolean(order)} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[90dvh] max-w-2xl overflow-y-auto border-arena/20 bg-[#fffaf0] p-0 text-[#24201b] sm:rounded-2xl">
+        <div className="border-b-4 border-sombrero px-7 pb-5 pt-7">
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-jalapeno">
+            Fabian's Mexican Restaurant
+          </p>
+          <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
+            <DialogTitle className="font-display text-4xl text-carbon">
+              Factura de pedido
+            </DialogTitle>
+            <span className="rounded-full bg-carbon px-4 py-2 font-mono text-lg font-bold text-sombrero">
+              {order.order_number}
+            </span>
+          </div>
+        </div>
+        <div className="space-y-5 px-7 pb-7">
+          <div className="grid gap-3 rounded-xl border border-carbon/15 bg-carbon/[0.035] p-4 text-sm sm:grid-cols-2">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide text-carbon/55">Cliente</p>
+              <p className="font-semibold">{order.customer_name}</p>
+              <p>{order.customer_phone}</p>
+            </div>
+            <div className="sm:text-right">
+              <p className="text-xs font-bold uppercase tracking-wide text-carbon/55">Servicio</p>
+              <p className="font-semibold">
+                {order.order_type === "pickup"
+                  ? "Para recoger"
+                  : `Mesa ${order.tables?.number ?? "—"}`}
+              </p>
+              <p>{new Date(order.created_at).toLocaleString()}</p>
+            </div>
+          </div>
+          <div className="overflow-hidden rounded-xl border border-carbon/15">
+            <table className="w-full text-sm">
+              <thead className="bg-carbon text-left text-xs uppercase tracking-wide text-[#fffaf0]">
+                <tr>
+                  <th className="px-3 py-3">Cant.</th>
+                  <th className="px-3 py-3">Plato</th>
+                  <th className="px-3 py-3 text-right">Precio</th>
+                  <th className="px-3 py-3 text-right">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {order.order_items.map((item, index) => (
+                  <tr key={`${item.item_name}-${index}`} className="border-t border-carbon/10">
+                    <td className="px-3 py-3 font-semibold">{item.quantity}</td>
+                    <td className="px-3 py-3">
+                      {item.item_name}
+                      {item.variant && (
+                        <small className="block text-carbon/60">{item.variant}</small>
+                      )}
+                    </td>
+                    <td className="px-3 py-3 text-right">${Number(item.unit_price).toFixed(2)}</td>
+                    <td className="px-3 py-3 text-right font-semibold">
+                      ${Number(item.item_total).toFixed(2)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {order.notes && (
+            <div className="rounded-xl border-l-4 border-tradicional bg-tradicional/10 px-4 py-3 text-sm">
+              <strong>Notas para cocina:</strong> {order.notes}
+            </div>
+          )}
+          <div className="ml-auto max-w-xs space-y-1 border-t-2 border-carbon pt-3 text-sm">
+            <div className="flex justify-between">
+              <span>Subtotal</span>
+              <span>${Number(order.subtotal).toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Impuesto</span>
+              <span>${Number(order.tax).toFixed(2)}</span>
+            </div>
+            {Number(order.surcharge) > 0 && (
+              <div className="flex justify-between">
+                <span>Recargo pickup</span>
+                <span>${Number(order.surcharge).toFixed(2)}</span>
+              </div>
+            )}
+            <div className="flex justify-between pt-2 text-lg font-black">
+              <span>Total</span>
+              <span>${Number(order.total).toFixed(2)}</span>
+            </div>
+          </div>
+          {history.length > 0 && (
+            <div className="border-t border-carbon/15 pt-4 text-xs text-carbon/65">
+              <strong className="text-carbon">Historial: </strong>
+              {history
+                .map(
+                  (entry) =>
+                    `${STATUS_LABELS[entry.status].es} · ${new Date(entry.changed_at).toLocaleTimeString()}`,
+                )
+                .join("  →  ")}
+            </div>
+          )}
+          <div className="flex flex-wrap justify-end gap-2 border-t border-carbon/15 pt-5">
+            <button
+              type="button"
+              onClick={() => openOrderReceipt(order)}
+              className="rounded-full border border-carbon/30 px-4 py-2 text-sm font-bold"
+            >
+              <Printer className="mr-1 inline h-4 w-4" /> Imprimir
+            </button>
+            {next !== order.status && (
+              <button
+                type="button"
+                onClick={() => void onMove(order, next)}
+                className="rounded-full bg-jalapeno px-4 py-2 text-sm font-bold text-arena"
+              >
+                Marcar como {STATUS_LABELS[next].es}
+              </button>
+            )}
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

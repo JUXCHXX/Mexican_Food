@@ -54,7 +54,7 @@ function OrderPage() {
                 Fabian's Mexican Restaurant
               </p>
               <h1 className="mt-2 font-display text-4xl text-arena md:text-6xl">
-                {es ? "Arma tu pedido" : "Build your order"}
+                {es ? "Haz tu pedido" : "Build your order"}
               </h1>
               <p className="mt-3 max-w-xl text-arena/60">
                 {es
