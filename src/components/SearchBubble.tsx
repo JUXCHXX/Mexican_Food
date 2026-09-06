@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Search, X, ArrowRight } from "lucide-react";
 import menuData from "@/data/menu.json";
 import { useMenuContext } from "@/contexts/MenuContext";
+import { getMenuItemSlug } from "@/lib/menu-data";
 
 interface MenuItem {
   name: string;
@@ -17,10 +18,6 @@ interface SearchResult extends MenuItem {
   category: string;
 }
 
-const slugify = (s: string): string => {
-  return s.toLowerCase().replace(/\s+/g, "-").replace(/[^\w-]/g, "");
-};
-
 export function SearchBubble() {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -34,7 +31,7 @@ export function SearchBubble() {
     }
     const q = query.toLowerCase();
     const matches: SearchResult[] = [];
-    const menu = menuData.menu as Record<string, { items: MenuItem[] }>;
+    const menu = menuData.menu as unknown as Record<string, { items?: MenuItem[] }>;
 
     for (const [category, section] of Object.entries(menu)) {
       if (section.items) {
@@ -64,7 +61,7 @@ export function SearchBubble() {
   };
 
   const handleGoToItem = (item: SearchResult) => {
-    const itemId = `item-${item.category}-${slugify(item.name)}`;
+    const itemId = `item-${getMenuItemSlug(item.category, item.name)}`;
 
     // Cerrar panel de búsqueda
     setOpen(false);

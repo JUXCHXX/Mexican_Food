@@ -8,15 +8,23 @@ import { SearchBubble } from "@/components/SearchBubble";
 import { MenuModal } from "@/components/MenuModal";
 import { ReviewGateModal } from "@/components/ReviewGateModal";
 import { CookieBanner } from "@/components/CookieBanner";
+import { MyOrdersBubble } from "@/components/MyOrdersBubble";
 import { MenuProvider } from "@/contexts/MenuContext";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Fabian's Mexican Restaurant — Menú Digital" },
-      { name: "description", content: "Sabores auténticos de México en Brentwood, TN. Explora el menú completo de Fabian's: tacos, fajitas, margaritas y más." },
+      {
+        name: "description",
+        content:
+          "Sabores auténticos de México en Brentwood, TN. Explora el menú completo de Fabian's: tacos, fajitas, margaritas y más.",
+      },
       { property: "og:title", content: "Fabian's Mexican Restaurant — Menú Digital" },
-      { property: "og:description", content: "Sabores auténticos de México en Brentwood, TN. Explora el menú completo." },
+      {
+        property: "og:description",
+        content: "Sabores auténticos de México en Brentwood, TN. Explora el menú completo.",
+      },
       { property: "og:type", content: "website" },
     ],
   }),
@@ -50,6 +58,7 @@ function Index() {
 
         <Footer />
         <ChatBubble />
+        <MyOrdersBubble />
         <SearchBubble />
       </main>
       <CookieBanner />

@@ -21,12 +21,12 @@
   --color-ring: var(--ring);
 
   /* Brand */
-  --color-sombrero: var(--sombrero);       /* #F2B233 amarillo */
+  --color-sombrero: var(--sombrero); /* #F2B233 amarillo */
   --color-tradicional: var(--tradicional); /* #C73A2D rojo */
-  --color-jalapeno: var(--jalapeno);       /* #0F8A5F verde */
-  --color-arena: var(--arena);             /* #F5E6C8 crema */
-  --color-carbon: var(--carbon);           /* #121212 */
-  --color-gris: var(--gris);               /* #2A2A2A */
+  --color-jalapeno: var(--jalapeno); /* #0F8A5F verde */
+  --color-arena: var(--arena); /* #F5E6C8 crema */
+  --color-carbon: var(--carbon); /* #121212 */
+  --color-gris: var(--gris); /* #2A2A2A */
 
   --color-primary: var(--sombrero);
   --color-primary-foreground: var(--carbon);
@@ -49,48 +49,61 @@
   --radius-xl: 22px;
   --radius-2xl: 28px;
 
-  --shadow-warm: 0 10px 40px -10px color-mix(in oklab, #F2B233 35%, transparent);
-  --shadow-warm-lg: 0 20px 60px -15px color-mix(in oklab, #F2B233 55%, transparent);
+  --shadow-warm: 0 10px 40px -10px color-mix(in oklab, #f2b233 35%, transparent);
+  --shadow-warm-lg: 0 20px 60px -15px color-mix(in oklab, #f2b233 55%, transparent);
 }
 
 :root {
-  --sombrero: #F2B233;
-  --tradicional: #C73A2D;
-  --jalapeno: #0F8A5F;
-  --arena: #F5E6C8;
+  --sombrero: #f2b233;
+  --tradicional: #c73a2d;
+  --jalapeno: #0f8a5f;
+  --arena: #f5e6c8;
   --carbon: #121212;
-  --gris: #2A2A2A;
+  --gris: #2a2a2a;
 
   --background: #121212;
-  --foreground: #F5E6C8;
-  --card: #2A2A2A;
-  --card-foreground: #F5E6C8;
+  --foreground: #f5e6c8;
+  --card: #2a2a2a;
+  --card-foreground: #f5e6c8;
   --muted: #1d1d1d;
   --muted-foreground: #b9ad92;
   --border: rgba(245, 230, 200, 0.08);
   --input: rgba(245, 230, 200, 0.12);
-  --ring: #F2B233;
+  --ring: #f2b233;
 }
 
 .dark {
   --background: #121212;
-  --foreground: #F5E6C8;
+  --foreground: #f5e6c8;
 }
 
 @layer base {
-  * { border-color: var(--color-border); }
-  html { scroll-behavior: smooth; }
+  * {
+    border-color: var(--color-border);
+  }
+  html {
+    scroll-behavior: smooth;
+  }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
     background-image:
-      radial-gradient(1200px 600px at 50% -200px, rgba(242, 178, 51, 0.10), transparent 60%),
+      radial-gradient(1200px 600px at 50% -200px, rgba(242, 178, 51, 0.1), transparent 60%),
       radial-gradient(800px 500px at 110% 30%, rgba(199, 58, 45, 0.08), transparent 60%);
   }
-  h1, h2, h3 { font-family: var(--font-display); letter-spacing: 0.02em; }
-  h4, h5, h6 { font-family: var(--font-heading); }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: 0.02em;
+  }
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-heading);
+  }
 }
 
 /* Talavera-inspired ornamental divider */
@@ -148,18 +161,58 @@
 
 /* Pulse ring for chat bubble */
 @keyframes brand-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(242, 178, 51, 0.55); }
-  50%      { box-shadow: 0 0 0 18px rgba(242, 178, 51, 0); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(242, 178, 51, 0.55);
+  }
+  50% {
+    box-shadow: 0 0 0 18px rgba(242, 178, 51, 0);
+  }
 }
-.brand-pulse { animation: brand-pulse 2.4s ease-out infinite; }
+.brand-pulse {
+  animation: brand-pulse 2.4s ease-out infinite;
+}
+
+@keyframes new-order-overdue-pulse {
+  0%,
+  100% {
+    border-color: rgba(199, 58, 45, 0.55);
+    box-shadow: 0 0 0 0 rgba(199, 58, 45, 0.05);
+  }
+  50% {
+    border-color: rgba(199, 58, 45, 1);
+    box-shadow:
+      0 0 0 7px rgba(199, 58, 45, 0.16),
+      0 0 24px rgba(199, 58, 45, 0.36);
+  }
+}
+
+.new-order-overdue {
+  animation: new-order-overdue-pulse 1.4s ease-in-out infinite;
+  background-color: rgba(199, 58, 45, 0.12);
+}
 
 /* Scroll-down bounce */
 @keyframes bounce-soft {
-  0%, 100% { transform: translateY(0); opacity: 0.6; }
-  50%      { transform: translateY(10px); opacity: 1; }
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(10px);
+    opacity: 1;
+  }
 }
-.bounce-soft { animation: bounce-soft 1.8s ease-in-out infinite; }
+.bounce-soft {
+  animation: bounce-soft 1.8s ease-in-out infinite;
+}
 
 /* Hide scrollbars on horizontal category nav */
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

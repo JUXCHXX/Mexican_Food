@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
-import { Flame, Sparkles, Star } from "lucide-react";
+import { Ban, Flame, Sparkles, Star } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useMenuContext } from "@/contexts/MenuContext";
+import { getMenuItemSlug } from "@/lib/menu-data";
 
 export interface MenuItem {
   name: string;
@@ -26,11 +27,7 @@ export interface MenuItem {
 
 const fmt = (n: number) => `$${n.toFixed(2)}`;
 
-const slugify = (s: string): string => {
-  return s.toLowerCase().replace(/\s+/g, "-").replace(/[^\w-]/g, "");
-};
-
-const resolvePrice = (
+export const resolvePrice = (
   item: MenuItem
 ): { label?: string; display: string } | null => {
   // 1. prices (objeto)
@@ -110,11 +107,6 @@ const resolvePrice = (
   return null;
 };
 
-const getPriceLabel = (item: MenuItem): string | undefined => {
-  const priceInfo = resolvePrice(item);
-  return priceInfo?.label;
-};
-
 function PriceBlock({ item }: { item: MenuItem }) {
   const priceInfo = resolvePrice(item);
 
@@ -150,9 +142,11 @@ export function MenuCard({
   const [expanded, setExpanded] = useState(false);
   const [isGlowing, setIsGlowing] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
-  const { highlightedItemId } = useMenuContext();
+  const { highlightedItemId, unavailableItems } = useMenuContext();
 
-  const itemId = `item-${categoryId}-${slugify(item.name)}`;
+  const itemSlug = getMenuItemSlug(categoryId, item.name);
+  const itemId = `item-${itemSlug}`;
+  const isAvailable = unavailableItems[itemSlug] !== true;
   const isHighlighted = highlightedItemId === itemId;
 
   useEffect(() => {
@@ -190,6 +184,8 @@ export function MenuCard({
 
     return (
       <motion.button
+          type="button"
+          disabled={!isAvailable}
         id={itemId}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -203,6 +199,13 @@ export function MenuCard({
         {/* Fondo degradado / Color sólido */}
         <div className="absolute inset-0 bg-gradient-to-br from-gris/60 via-gris/40 to-carbon" />
         <div className="absolute inset-0 group-hover:bg-black/10 transition-colors duration-300" />
+          {!isAvailable && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-carbon/75">
+              <span className="flex items-center gap-2 rounded-full border border-tradicional/60 bg-carbon/90 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-tradicional">
+                <Ban className="h-4 w-4" /> Agotado / Sold out
+              </span>
+            </div>
+          )}
 
         {/* Contenido */}
         <div className="relative flex flex-col h-full p-4 md:p-5">
@@ -266,6 +269,13 @@ export function MenuCard({
         boxShadow: isGlowing ? glowShadow : undefined,
       }}
     >
+      {!isAvailable && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-carbon/70">
+          <span className="flex items-center gap-2 rounded-full border border-tradicional/60 bg-carbon/90 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-tradicional">
+            <Ban className="h-4 w-4" /> Agotado / Sold out
+          </span>
+        </div>
+      )}
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1">
           <h3 className="font-[var(--font-heading)] font-semibold text-arena text-lg leading-tight">

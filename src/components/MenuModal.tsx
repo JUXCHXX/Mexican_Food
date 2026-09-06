@@ -146,7 +146,7 @@ export function MenuModal() {
                     key={`${selectedCategoryKey}-${item.name}-${i}`}
                     item={item}
                     index={i}
-                    categoryId={selectedCategoryKey}
+                    categoryId={currentCategory.key}
                     variant="modal"
                   />
                 ))}

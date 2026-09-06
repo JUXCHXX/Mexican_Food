@@ -10,33 +10,102 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as MisPedidosRouteImport } from './routes/mis-pedidos'
+import { Route as PanelRouteImport } from './routes/panel'
+import { Route as PedirRouteImport } from './routes/pedir'
+import { Route as PoliticaDePrivacidadRouteImport } from './routes/politica-de-privacidad'
+import { Route as TerminosRouteImport } from './routes/terminos'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MisPedidosRoute = MisPedidosRouteImport.update({
+  id: '/mis-pedidos',
+  path: '/mis-pedidos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PanelRoute = PanelRouteImport.update({
+  id: '/panel',
+  path: '/panel',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PedirRoute = PedirRouteImport.update({
+  id: '/pedir',
+  path: '/pedir',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PoliticaDePrivacidadRoute = PoliticaDePrivacidadRouteImport.update({
+  id: '/politica-de-privacidad',
+  path: '/politica-de-privacidad',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TerminosRoute = TerminosRouteImport.update({
+  id: '/terminos',
+  path: '/terminos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/mis-pedidos': typeof MisPedidosRoute
+  '/panel': typeof PanelRoute
+  '/pedir': typeof PedirRoute
+  '/politica-de-privacidad': typeof PoliticaDePrivacidadRoute
+  '/terminos': typeof TerminosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/mis-pedidos': typeof MisPedidosRoute
+  '/panel': typeof PanelRoute
+  '/pedir': typeof PedirRoute
+  '/politica-de-privacidad': typeof PoliticaDePrivacidadRoute
+  '/terminos': typeof TerminosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/mis-pedidos': typeof MisPedidosRoute
+  '/panel': typeof PanelRoute
+  '/pedir': typeof PedirRoute
+  '/politica-de-privacidad': typeof PoliticaDePrivacidadRoute
+  '/terminos': typeof TerminosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/mis-pedidos'
+    | '/panel'
+    | '/pedir'
+    | '/politica-de-privacidad'
+    | '/terminos'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/mis-pedidos'
+    | '/panel'
+    | '/pedir'
+    | '/politica-de-privacidad'
+    | '/terminos'
+  id:
+    | '__root__'
+    | '/'
+    | '/mis-pedidos'
+    | '/panel'
+    | '/pedir'
+    | '/politica-de-privacidad'
+    | '/terminos'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  MisPedidosRoute: typeof MisPedidosRoute
+  PanelRoute: typeof PanelRoute
+  PedirRoute: typeof PedirRoute
+  PoliticaDePrivacidadRoute: typeof PoliticaDePrivacidadRoute
+  TerminosRoute: typeof TerminosRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +117,51 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mis-pedidos': {
+      id: '/mis-pedidos'
+      path: '/mis-pedidos'
+      fullPath: '/mis-pedidos'
+      preLoaderRoute: typeof MisPedidosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/panel': {
+      id: '/panel'
+      path: '/panel'
+      fullPath: '/panel'
+      preLoaderRoute: typeof PanelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pedir': {
+      id: '/pedir'
+      path: '/pedir'
+      fullPath: '/pedir'
+      preLoaderRoute: typeof PedirRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/politica-de-privacidad': {
+      id: '/politica-de-privacidad'
+      path: '/politica-de-privacidad'
+      fullPath: '/politica-de-privacidad'
+      preLoaderRoute: typeof PoliticaDePrivacidadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terminos': {
+      id: '/terminos'
+      path: '/terminos'
+      fullPath: '/terminos'
+      preLoaderRoute: typeof TerminosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  MisPedidosRoute: MisPedidosRoute,
+  PanelRoute: PanelRoute,
+  PedirRoute: PedirRoute,
+  PoliticaDePrivacidadRoute: PoliticaDePrivacidadRoute,
+  TerminosRoute: TerminosRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

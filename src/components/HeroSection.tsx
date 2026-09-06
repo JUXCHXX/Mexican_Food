@@ -1,6 +1,7 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { useRef } from "react";
+import { Link } from "@tanstack/react-router";
 import logo from "@/assets/fabians-logo.png";
 
 export function HeroSection({ onCtaClick }: { onCtaClick: () => void }) {
@@ -74,6 +75,13 @@ export function HeroSection({ onCtaClick }: { onCtaClick: () => void }) {
           >
             (615) 376-9978
           </a>
+          <Link
+            to="/pedir"
+            search={{ tipo: "pickup", mesa: undefined }}
+            className="rounded-full border border-jalapeno px-7 py-3 font-[var(--font-heading)] font-bold text-jalapeno hover:bg-jalapeno/10 transition-colors"
+          >
+            Pedir para recoger
+          </Link>
         </motion.div>
       </div>
 
