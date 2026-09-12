@@ -7,7 +7,7 @@ import { TalaveraDivider } from "./TalaveraDivider";
 
 export function Footer() {
   const [copied, setCopied] = useState(false);
-  const shareText = "¡Mira el menú de Fabian's Mexican Restaurant! 🌮";
+  const shareText = "Take a look at Fabian's Mexican Restaurant menu! 🌮";
   const [shareUrl, setShareUrl] = useState("");
   if (typeof window !== "undefined" && !shareUrl) setShareUrl(window.location.href);
   const facebookUrl = "https://www.facebook.com/fabiansmexicanrestaurantbrentwoodtn/";
@@ -47,7 +47,7 @@ export function Footer() {
         {/* Share row */}
         <div className="flex flex-col items-center gap-4">
           <h4 className="text-arena/70 font-[var(--font-heading)] text-sm uppercase tracking-widest">
-            Compartir el menú
+            Share the menu
           </h4>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <a
@@ -63,13 +63,13 @@ export function Footer() {
               className="flex items-center gap-2 rounded-full bg-sombrero text-carbon px-4 py-2 text-sm font-semibold hover:scale-105 transition"
             >
               {copied ? <Check className="h-4 w-4" /> : <Link2 className="h-4 w-4" />}
-              {copied ? "¡Copiado!" : "Copiar link"}
+              {copied ? "Copied!" : "Copy link"}
             </button>
           </div>
         </div>
         <div className="mt-7 flex justify-center gap-5 text-xs text-arena/60 underline-offset-4 hover:[&>a]:text-sombrero">
-          <Link to="/politica-de-privacidad">Política de privacidad</Link>
-          <Link to="/terminos">Términos</Link>
+          <Link to="/politica-de-privacidad">Privacy policy</Link>
+          <Link to="/terminos">Terms</Link>
         </div>
 
         <p className="mt-10 text-center text-xs text-arena/40 font-body">
@@ -77,7 +77,7 @@ export function Footer() {
           Brentwood, TN 37027 · (615) 376-9978
         </p>
         <p className="mt-1 text-center text-[11px] text-arena/30 font-body">
-          Diseño y asistente AI por Velto
+          Design and AI assistant by Velto
         </p>
       </div>
     </footer>

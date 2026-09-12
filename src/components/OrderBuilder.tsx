@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Check, ChevronDown, Minus, Plus, ShoppingBag, ShoppingCart, Trash2 } from "lucide-react";
+import { Check, Minus, Plus, ShoppingBag, ShoppingCart, Trash2 } from "lucide-react";
+import { motion } from "framer-motion";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { getMeta } from "@/lib/menu-categories";
 import { resolvePrice } from "@/components/MenuCard";
@@ -231,8 +232,11 @@ export function OrderBuilder({
     // Future SMS updates require explicit opt-in consent before any automated message (TCPA).
   };
 
+  const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const orderTotal = subtotal + tax + surcharge;
+
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
+    <div className="pb-24">
       <section className="min-w-0">
         <div className="mb-6 grid grid-cols-[repeat(auto-fit,minmax(130px,1fr))] gap-3">
           {visibleSections.map(([key, value]) => {
@@ -259,29 +263,6 @@ export function OrderBuilder({
             );
           })}
         </div>
-        {cart.length > 0 && (
-          <div className="sticky top-[calc(100vh-5.5rem)] z-20 mb-4 lg:hidden">
-            <button
-              type="button"
-              onClick={() => {
-                setCheckoutOpen(true);
-                document
-                  .getElementById("order-checkout")
-                  ?.scrollIntoView({ behavior: "smooth", block: "start" });
-              }}
-              className="flex w-full items-center justify-between rounded-2xl border border-sombrero/60 bg-sombrero px-4 py-3 text-left font-bold text-carbon shadow-xl"
-            >
-              <span className="inline-flex items-center gap-2">
-                <ShoppingCart className="h-5 w-5" /> Checkout
-              </span>
-              <span>
-                {cart.reduce((sum, item) => sum + item.quantity, 0)} · $
-                {(subtotal + tax + surcharge).toFixed(2)}{" "}
-                <ChevronDown className="ml-1 inline h-4 w-4" />
-              </span>
-            </button>
-          </div>
-        )}
         <p className="rounded-2xl border border-arena/10 bg-gris/35 p-5 text-sm text-arena/60">
           {language === "es"
             ? "Elige una categoría para ver sus platos y agregarlos a tu pedido."
@@ -345,10 +326,10 @@ export function OrderBuilder({
           </DialogContent>
         </Dialog>
       </section>
-      <aside
-        id="order-checkout"
-        className={`h-fit scroll-mt-4 rounded-3xl border border-sombrero/25 bg-gris/70 p-5 lg:sticky lg:top-4 ${checkoutOpen ? "ring-2 ring-sombrero/50" : ""}`}
-      >
+      <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
+        <DialogContent className="z-[70] max-h-[90dvh] w-[calc(100%-1.5rem)] max-w-xl overflow-y-auto rounded-3xl border-sombrero/25 bg-gris p-5 text-arena sm:p-7">
+          <DialogTitle className="sr-only">{t.cart}</DialogTitle>
+          <div>
         <div className="mb-4 flex items-center justify-between">
           <h2 className="font-display text-2xl text-arena">{t.cart}</h2>
           <ShoppingBag className="text-sombrero" />
@@ -420,7 +401,7 @@ export function OrderBuilder({
           )}
           <div className="flex justify-between text-lg font-bold text-sombrero">
             <span>{t.total}</span>
-            <span>${(subtotal + tax + surcharge).toFixed(2)}</span>
+            <span>${orderTotal.toFixed(2)}</span>
           </div>
         </div>
         <div className="mt-5 space-y-3">
@@ -464,7 +445,23 @@ export function OrderBuilder({
             {submitting ? "..." : t.send}
           </button>
         </div>
-      </aside>
+          </div>
+        </DialogContent>
+      </Dialog>
+      {cart.length > 0 && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-sombrero/30 bg-carbon/95 p-3 backdrop-blur-md">
+          <div className="mx-auto max-w-3xl">
+            <button
+              type="button"
+              onClick={() => setCheckoutOpen(true)}
+              className="flex w-full items-center justify-between rounded-2xl bg-sombrero px-5 py-3.5 text-left font-bold text-carbon shadow-[0_-8px_28px_rgba(0,0,0,0.28)] transition hover:brightness-105"
+            >
+              <span className="inline-flex items-center gap-2"><ShoppingCart className="h-5 w-5" /> Checkout <small className="rounded-full bg-carbon/15 px-2 py-0.5">{itemCount}</small></span>
+              <span>${orderTotal.toFixed(2)}</span>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -478,8 +475,15 @@ export function OrderConfirmation({
 }) {
   const t = copy[language];
   return (
-    <div className="mx-auto max-w-xl rounded-3xl border border-jalapeno/50 bg-gris/70 p-8 text-center">
-      <Check className="mx-auto h-12 w-12 text-jalapeno" />
+    <motion.div
+      initial={{ opacity: 0, scale: 0.82, y: 24 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ type: "spring", stiffness: 260, damping: 18 }}
+      className="mx-auto max-w-xl rounded-3xl border border-jalapeno/50 bg-gris/70 p-8 text-center shadow-[0_0_60px_rgba(74,140,73,0.2)]"
+    >
+      <motion.div initial={{ scale: 0, rotate: -45 }} animate={{ scale: 1, rotate: 0 }} transition={{ delay: 0.2, type: "spring", stiffness: 360 }}>
+        <Check className="mx-auto h-12 w-12 text-jalapeno" />
+      </motion.div>
       <h2 className="mt-4 font-display text-3xl text-arena">{t.success}</h2>
       <p className="mt-4 text-arena/70">{t.reference}</p>
       <div className="my-4 text-5xl font-display text-sombrero">{result.order.order_number}</div>
@@ -491,6 +495,6 @@ export function OrderConfirmation({
       <p className="mt-5 text-lg font-bold text-sombrero">
         ${Number(result.order.total).toFixed(2)}
       </p>
-    </div>
+    </motion.div>
   );
 }

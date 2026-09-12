@@ -23,27 +23,39 @@ function OrderPage() {
   const [tableToken, setTableToken] = useState<string>();
   const [activeTables, setActiveTables] = useState<ActiveTable[]>([]);
   const [tableLoading, setTableLoading] = useState(false);
-  const [language, setLanguage] = useState<"es" | "en">("es");
+  const [tableOrderingEnabled, setTableOrderingEnabled] = useState(false);
+  const [language, setLanguage] = useState<"es" | "en">("en");
   const [result, setResult] = useState<OrderResult>();
   const search = Route.useSearch();
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const mesa = search.mesa ?? params.get("mesa") ?? undefined;
     setTableToken(undefined);
-    setOrderType(mesa && search.tipo !== "pickup" ? "dine_in" : "pickup");
+    setOrderType("pickup");
     const supabase = getSupabase();
     if (!supabase) return;
-    setTableLoading(true);
     void supabase
-      .from("tables")
-      .select("id,number,qr_token")
-      .eq("active", true)
-      .order("number")
+      .from("app_settings")
+      .select("table_ordering_enabled")
+      .eq("id", true)
+      .maybeSingle()
       .then(({ data }) => {
-        const tables = (data ?? []) as ActiveTable[];
-        setActiveTables(tables);
-        setTableToken(tables.find((table) => table.qr_token === mesa)?.qr_token);
-        setTableLoading(false);
+        const enabled = data?.table_ordering_enabled === true;
+        setTableOrderingEnabled(enabled);
+        if (!enabled || !mesa || search.tipo === "pickup") return;
+        setTableLoading(true);
+        void supabase
+          .from("tables")
+          .select("id,number,qr_token")
+          .eq("active", true)
+          .order("number")
+          .then(({ data: tableData }) => {
+            const tables = (tableData ?? []) as ActiveTable[];
+            setActiveTables(tables);
+            setTableToken(tables.find((table) => table.qr_token === mesa)?.qr_token);
+            setOrderType("dine_in");
+            setTableLoading(false);
+          });
       });
   }, [search.mesa, search.tipo]);
   const es = language === "es";
@@ -81,14 +93,16 @@ function OrderPage() {
               </p>
             </div>
             <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setOrderType("dine_in")}
-                className={`rounded-full px-4 py-2 text-sm font-semibold ${orderType === "dine_in" ? "bg-sombrero text-carbon" : "border border-arena/20"}`}
-              >
-                <MapPin className="mr-1 inline h-4 w-4" />
-                {es ? "En mesa" : "Dine in"}
-              </button>
+              {tableOrderingEnabled && (
+                <button
+                  type="button"
+                  onClick={() => setOrderType("dine_in")}
+                  className={`rounded-full px-4 py-2 text-sm font-semibold ${orderType === "dine_in" ? "bg-sombrero text-carbon" : "border border-arena/20"}`}
+                >
+                  <MapPin className="mr-1 inline h-4 w-4" />
+                  {es ? "En mesa" : "Dine in"}
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => setOrderType("pickup")}

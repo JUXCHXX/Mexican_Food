@@ -52,7 +52,7 @@ type PanelOrder = {
     item_total: number;
   }>;
 };
-type Role = "admin" | "super_admin";
+type Role = "admin" | "super_admin" | "support";
 
 const NEW_ORDER_ALERT_AFTER_MS = 60_000;
 const NEW_ORDER_SOUND_INTERVAL_MS = 10_000;
@@ -243,15 +243,13 @@ function Dashboard({
 }) {
   const [orders, setOrders] = useState<PanelOrder[]>([]);
   const [query, setQuery] = useState("");
-  const [active, setActive] = useState<"kanban" | "tables" | "settings" | "stats">(
-    role === "super_admin" ? "settings" : "kanban",
+  const [active, setActive] = useState<"kanban" | "settings" | "stats" | "support">(
+    role === "support" ? "support" : role === "super_admin" ? "settings" : "kanban",
   );
   const supabase = getSupabase();
   const [now, setNow] = useState(() => Date.now());
   const [soundMuted, setSoundMuted] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<PanelOrder | null>(null);
-  const [selectedTable, setSelectedTable] = useState<{ id: string; number: number } | null>(null);
-  const [tables, setTables] = useState<Array<{ id: string; number: number }>>([]);
   const [orderHistory, setOrderHistory] = useState<
     Array<{ status: OrderStatus; changed_at: string }>
   >([]);
@@ -265,18 +263,9 @@ function Dashboard({
       .limit(300);
     setOrders((data ?? []) as PanelOrder[]);
   };
-  const loadTables = async () => {
-    if (!supabase) return;
-    const { data } = await supabase
-      .from("tables")
-      .select("id,number")
-      .eq("active", true)
-      .order("number");
-    setTables((data ?? []) as Array<{ id: string; number: number }>);
-  };
   useEffect(() => {
+    if (role === "support") return;
     void loadOrders();
-    void loadTables();
     if (!supabase) return;
     const channel = supabase
       .channel("staff-orders")
@@ -289,21 +278,7 @@ function Dashboard({
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [supabase]);
-  useEffect(() => {
-    if (!supabase) return;
-    const channel = supabase
-      .channel("staff-tables")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "tables" },
-        () => void loadTables(),
-      )
-      .subscribe();
-    return () => {
-      void supabase.removeChannel(channel);
-    };
-  }, [supabase]);
+  }, [role, supabase]);
   const move = async (order: PanelOrder, status: OrderStatus) => {
     if (!supabase) return;
     if (orderStatusIndex(status) <= orderStatusIndex(order.status)) return;
@@ -340,6 +315,9 @@ function Dashboard({
     return () => window.clearInterval(clock);
   }, []);
   useEffect(() => {
+    if (role === "support") setActive("support");
+  }, [role]);
+  useEffect(() => {
     if (soundMuted || !soundReady || !hasNewOrders) return;
     const interval = window.setInterval(playNewOrderTone, NEW_ORDER_SOUND_INTERVAL_MS);
     return () => window.clearInterval(interval);
@@ -367,22 +345,26 @@ function Dashboard({
       </header>
       <div className="mx-auto mt-8 max-w-[1500px]">
         <nav className="mb-6 flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => setActive("kanban")}
-            className={`rounded-full px-4 py-2 text-sm font-semibold ${active === "kanban" ? "bg-sombrero text-carbon" : "border border-arena/20"}`}
-          >
-            <UtensilsCrossed className="mr-1 inline h-4 w-4" />
-            Kanban
-          </button>
-          <button
-            type="button"
-            onClick={() => setActive("tables")}
-            className={`rounded-full px-4 py-2 text-sm font-semibold ${active === "tables" ? "bg-sombrero text-carbon" : "border border-arena/20"}`}
-          >
-            <Table2 className="mr-1 inline h-4 w-4" />
-            Mesas
-          </button>
+          {role !== "support" && (
+            <button
+              type="button"
+              onClick={() => setActive("kanban")}
+              className={`rounded-full px-4 py-2 text-sm font-semibold ${active === "kanban" ? "bg-sombrero text-carbon" : "border border-arena/20"}`}
+            >
+              <UtensilsCrossed className="mr-1 inline h-4 w-4" />
+              Kanban
+            </button>
+          )}
+          {role === "support" && (
+            <button
+              type="button"
+              onClick={() => setActive("support")}
+              className={`rounded-full px-4 py-2 text-sm font-semibold ${active === "support" ? "bg-sombrero text-carbon" : "border border-arena/20"}`}
+            >
+              <Settings2 className="mr-1 inline h-4 w-4" />
+              Support
+            </button>
+          )}
           {role === "super_admin" && (
             <>
               <button
@@ -404,7 +386,7 @@ function Dashboard({
             </>
           )}
         </nav>
-        {active === "kanban" && (
+        {role !== "support" && active === "kanban" && (
           <>
             <div className="mb-5 flex max-w-sm items-center gap-2">
               <div className="flex flex-1 items-center gap-2 rounded-full border border-arena/15 bg-gris px-4 py-2">
@@ -478,16 +460,7 @@ function Dashboard({
             </div>
           </>
         )}
-        {active === "tables" && (
-          <TableMap
-            tables={tables}
-            orders={orders}
-            selectedTable={selectedTable}
-            onSelectTable={setSelectedTable}
-            onOpenOrder={openOrder}
-            onMove={move}
-          />
-        )}
+        {role === "support" && active === "support" && <SupportSettings />}
         {role === "super_admin" && active === "settings" && <SuperAdminSettings />}
         {role === "super_admin" && active === "stats" && <Stats orders={orders} />}
         <OrderInvoiceDialog
@@ -803,6 +776,52 @@ function OrderInvoiceDialog({
   );
 }
 
+function SupportSettings() {
+  const supabase = getSupabase();
+  const [enabled, setEnabled] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+  useEffect(() => {
+    if (!supabase) return;
+    void supabase
+      .from("app_settings")
+      .select("table_ordering_enabled")
+      .eq("id", true)
+      .maybeSingle()
+      .then(({ data }) => setEnabled(data?.table_ordering_enabled === true));
+  }, [supabase]);
+  const setTableOrdering = async (value: boolean) => {
+    if (!supabase) return;
+    setSaving(true);
+    setMessage("");
+    const { error } = await supabase.rpc("set_table_ordering_enabled", { p_enabled: value });
+    setSaving(false);
+    if (error) {
+      setMessage(error.message);
+      return;
+    }
+    setEnabled(value);
+    setMessage(value ? "Table orders are enabled." : "Table orders are disabled across the app.");
+  };
+  return (
+    <section className="max-w-2xl rounded-3xl border border-arena/10 bg-gris/50 p-6">
+      <p className="text-xs font-bold uppercase tracking-[0.22em] text-sombrero">Support controls</p>
+      <h2 className="mt-2 font-display text-3xl">Table ordering</h2>
+      <p className="mt-2 text-sm leading-relaxed text-arena/60">
+        Turn this on only when the table-ordering rollout is ready. While it is off, table options,
+        QR ordering, and table management stay unavailable in the customer app and staff panel.
+      </p>
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-arena/10 bg-carbon/50 p-4">
+        <div><p className="font-semibold">Accept orders at tables</p><p className="text-sm text-arena/55">Currently {enabled ? "enabled" : "disabled"}</p></div>
+        <button type="button" disabled={saving} onClick={() => void setTableOrdering(!enabled)} className={`rounded-full px-5 py-2.5 font-bold disabled:opacity-50 ${enabled ? "bg-tradicional text-arena" : "bg-sombrero text-carbon"}`}>
+          {saving ? "Saving…" : enabled ? "Disable" : "Enable"}
+        </button>
+      </div>
+      {message && <p className="mt-4 text-sm text-sombrero">{message}</p>}
+    </section>
+  );
+}
+
 function SuperAdminSettings() {
   const supabase = getSupabase();
   const [status, setStatus] = useState<Record<string, boolean>>({});
@@ -867,7 +886,7 @@ function SuperAdminSettings() {
   };
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      <section className="rounded-3xl border border-arena/10 bg-gris/50 p-5">
+      <section className="hidden rounded-3xl border border-arena/10 bg-gris/50 p-5" aria-hidden="true">
         <h2 className="font-display text-2xl">Agotados</h2>
         <p className="mt-2 text-sm text-arena/60">
           Los cambios afectan menú público y creación de pedidos.

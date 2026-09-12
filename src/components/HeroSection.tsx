@@ -1,6 +1,6 @@
 import { motion, useScroll, useTransform } from "framer-motion";
-import { ChevronDown } from "lucide-react";
-import { useRef } from "react";
+import { ChevronDown, Languages } from "lucide-react";
+import { useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import logo from "@/assets/fabians-logo.png";
 
@@ -9,6 +9,8 @@ export function HeroSection({ onCtaClick }: { onCtaClick: () => void }) {
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 600], [0, 150]);
   const opacity = useTransform(scrollY, [0, 400], [1, 0]);
+  const [language, setLanguage] = useState<"en" | "es">("en");
+  const isSpanish = language === "es";
 
   const handleScroll = () => {
     document.getElementById("category-nav")?.scrollIntoView({ behavior: "smooth" });
@@ -35,6 +37,14 @@ export function HeroSection({ onCtaClick }: { onCtaClick: () => void }) {
         <div className="absolute inset-0 sarape-bg opacity-60" />
       </motion.div>
 
+      <button
+        type="button"
+        onClick={() => setLanguage(isSpanish ? "en" : "es")}
+        className="absolute right-5 top-5 z-20 inline-flex items-center gap-2 rounded-full border border-arena/30 bg-carbon/55 px-3 py-2 text-xs font-bold text-arena backdrop-blur hover:border-sombrero"
+        aria-label={isSpanish ? "Switch to English" : "Cambiar a español"}
+      >
+        <Languages className="h-4 w-4 text-sombrero" /> {isSpanish ? "EN" : "ES"}
+      </button>
       <div className="relative z-10 text-center max-w-3xl mx-auto">
         <motion.div
           initial={{ opacity: 0, scale: 0.85, y: 20 }}
@@ -54,7 +64,9 @@ export function HeroSection({ onCtaClick }: { onCtaClick: () => void }) {
           transition={{ delay: 0.5, duration: 0.7 }}
           className="mt-4 text-arena/80 font-body text-base md:text-lg italic max-w-xl mx-auto"
         >
-          Sabores auténticos de México, hechos con tradición — en el corazón de Brentwood, TN.
+          {isSpanish
+            ? "Sabores auténticos de México, hechos con tradición — en el corazón de Brentwood, TN."
+            : "Authentic Mexican flavors, made with tradition — in the heart of Brentwood, TN."}
         </motion.p>
 
         <motion.div
@@ -67,7 +79,7 @@ export function HeroSection({ onCtaClick }: { onCtaClick: () => void }) {
             onClick={handleScroll}
             className="rounded-full bg-sombrero px-7 py-3 font-[var(--font-heading)] font-bold text-carbon shadow-[0_15px_40px_-10px_rgba(242,178,51,0.6)] hover:scale-105 transition-transform"
           >
-            Explorar el menú
+            {isSpanish ? "Explorar el menú" : "Explore the menu"}
           </button>
           <a
             href="tel:+16153769978"
@@ -80,7 +92,7 @@ export function HeroSection({ onCtaClick }: { onCtaClick: () => void }) {
             search={{ tipo: "pickup", mesa: undefined }}
             className="rounded-full border border-jalapeno px-7 py-3 font-[var(--font-heading)] font-bold text-jalapeno hover:bg-jalapeno/10 transition-colors"
           >
-            Pedir para recoger
+            {isSpanish ? "Pedir para recoger" : "Order pickup"}
           </Link>
         </motion.div>
       </div>
