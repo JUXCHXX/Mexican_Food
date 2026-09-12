@@ -16,7 +16,6 @@ export interface CustomerOrder {
   order_type: OrderType;
   table_id?: string | null;
   table_number?: number | null;
-  table_number?: number | null;
   customer_name: string;
   customer_phone: string;
   status: OrderStatus;
