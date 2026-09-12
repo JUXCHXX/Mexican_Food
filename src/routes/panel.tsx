@@ -74,11 +74,22 @@ function PanelPage() {
   const [authError, setAuthError] = useState("");
   const loadPanelProfile = async () => {
     if (!supabase) return;
-    const { data, error } = await supabase.rpc("get_my_panel_profile");
-    const profile = data?.[0] as { role?: Role; full_name?: string } | undefined;
-    if (error || !profile?.role) {
+    const { data: directProfile } = await supabase
+      .from("profiles")
+      .select("role,full_name")
+      .maybeSingle();
+    const { data: rpcData, error: rpcError } = directProfile?.role
+      ? { data: undefined, error: null }
+      : await supabase.rpc("get_my_panel_profile");
+    const profile = (directProfile?.role ? directProfile : rpcData?.[0]) as
+      | { role?: Role; full_name?: string }
+      | undefined;
+    if (rpcError || !profile?.role) {
       setRole(undefined);
-      setAuthError(error?.message ?? "No panel profile was found for this account.");
+      setAuthError(
+        rpcError?.message ??
+          "No panel profile was found. Assign this account a role in public.profiles using its Auth user UUID.",
+      );
       return;
     }
     setRole(profile.role);
@@ -177,7 +188,10 @@ function PanelPage() {
   if (!role)
     return (
       <main className="flex min-h-screen items-center justify-center bg-carbon p-5 text-center text-arena">
-        <div><h1 className="font-display text-3xl text-sombrero">Profile unavailable</h1><p className="mt-2 text-sm text-arena/60">Your account does not have a valid panel role yet.</p></div>
+        <div>
+          <h1 className="font-display text-3xl text-sombrero">Profile unavailable</h1>
+          <p className="mt-2 max-w-lg text-sm text-arena/60">{authError}</p>
+        </div>
       </main>
     );
   return (
