@@ -1,4 +1,4 @@
--- Feature flag for the future table-ordering rollout. It defaults to off.
+-- Safe one-time support setup. Run this entire file in Supabase SQL Editor.
 alter type public.user_role add value if not exists 'support';
 
 create table if not exists public.app_settings (
@@ -13,56 +13,44 @@ values (true, false)
 on conflict (id) do nothing;
 
 alter table public.app_settings enable row level security;
-
 drop policy if exists app_settings_public_read on public.app_settings;
 create policy app_settings_public_read on public.app_settings
 for select to anon, authenticated using (true);
 
--- Support may only change this one feature flag, never table records or other settings.
+create or replace function public.get_my_panel_profile()
+returns table(role public.user_role, full_name text)
+language sql stable security definer set search_path = public as $$
+  select p.role, p.full_name from public.profiles as p where p.id = auth.uid()
+$$;
+
 create or replace function public.set_table_ordering_enabled(p_enabled boolean)
 returns public.app_settings
 language plpgsql security definer set search_path = public as $$
 declare result public.app_settings;
 begin
-  if not exists (
-    select 1 from public.profiles where id = auth.uid() and role = 'support'
-  ) then
+  if not exists (select 1 from public.profiles where id = auth.uid() and role = 'support') then
     raise exception 'Only support users can change table ordering';
   end if;
   update public.app_settings
   set table_ordering_enabled = p_enabled, updated_at = now(), updated_by = auth.uid()
-  where id = true
-  returning * into result;
+  where id = true returning * into result;
   return result;
 end;
 $$;
 
-grant select on public.app_settings to anon, authenticated;
-grant execute on function public.set_table_ordering_enabled(boolean) to authenticated;
-
--- A security-definer lookup keeps the panel role readable even when profile RLS evolves.
-create or replace function public.get_my_panel_profile()
-returns table(role public.user_role, full_name text)
-language sql stable security definer set search_path = public as $$
-  select p.role, p.full_name
-  from public.profiles as p
-  where p.id = auth.uid()
-$$;
-
-grant execute on function public.get_my_panel_profile() to authenticated;
-
--- Support is intentionally not staff: it cannot read or administer orders.
 create or replace function public.is_staff(required_role public.user_role default null)
 returns boolean language sql stable security definer set search_path = public as $$
   select exists (
     select 1 from public.profiles
-    where id = auth.uid()
-      and role in ('admin', 'super_admin')
+    where id = auth.uid() and role in ('admin', 'super_admin')
       and (required_role is null or role = required_role)
-  );
+  )
 $$;
 
--- Enforce the flag server-side as well as in the UI.
+grant select on public.app_settings to anon, authenticated;
+grant execute on function public.get_my_panel_profile() to authenticated;
+grant execute on function public.set_table_ordering_enabled(boolean) to authenticated;
+
 create or replace function public.create_order(
   p_order_type public.order_type, p_table_token uuid, p_customer_name text,
   p_customer_phone text, p_items jsonb, p_notes text default null, p_tip numeric default 0
@@ -97,6 +85,3 @@ begin
   return jsonb_build_object('order', to_jsonb(new_order), 'items', coalesce((select jsonb_agg(to_jsonb(oi)) from public.order_items as oi where oi.order_id = new_order.id), '[]'::jsonb));
 end;
 $$;
-
--- After creating the Auth user, assign its profile with:
--- update public.profiles set role = 'support' where id = '<auth-user-uuid>';

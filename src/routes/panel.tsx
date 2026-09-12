@@ -72,6 +72,18 @@ function PanelPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState("");
+  const loadPanelProfile = async () => {
+    if (!supabase) return;
+    const { data, error } = await supabase.rpc("get_my_panel_profile");
+    const profile = data?.[0] as { role?: Role; full_name?: string } | undefined;
+    if (error || !profile?.role) {
+      setRole(undefined);
+      setAuthError(error?.message ?? "No panel profile was found for this account.");
+      return;
+    }
+    setRole(profile.role);
+    setName(profile.full_name ?? "");
+  };
   const unlockPanelAudio = () => {
     if (audioUnlocked) return;
     const audio = panelAudioRef.current;
@@ -109,13 +121,7 @@ function PanelPage() {
       setSession(Boolean(data.session));
       if (data.session) {
         setProfileReady(false);
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("role,full_name")
-          .eq("id", data.session.user.id)
-          .single();
-        setRole(profile?.role as Role);
-        setName(profile?.full_name ?? "");
+        await loadPanelProfile();
         setProfileReady(true);
       } else {
         setRole(undefined);
@@ -139,13 +145,7 @@ function PanelPage() {
       const { data } = await supabase.auth.getSession();
       if (data.session) {
         setProfileReady(false);
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("role,full_name")
-          .eq("id", data.session.user.id)
-          .single();
-        setRole(profile?.role as Role);
-        setName(profile?.full_name ?? "");
+        await loadPanelProfile();
         setSession(true);
         setProfileReady(true);
       }
