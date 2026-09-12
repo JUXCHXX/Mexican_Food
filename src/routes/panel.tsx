@@ -67,6 +67,7 @@ function PanelPage() {
   const [audioUnlocked, setAudioUnlocked] = useState(false);
   const [session, setSession] = useState<boolean | null>(null);
   const [role, setRole] = useState<Role>();
+  const [profileReady, setProfileReady] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -107,6 +108,7 @@ function PanelPage() {
     void supabase.auth.getSession().then(async ({ data }) => {
       setSession(Boolean(data.session));
       if (data.session) {
+        setProfileReady(false);
         const { data: profile } = await supabase
           .from("profiles")
           .select("role,full_name")
@@ -114,6 +116,10 @@ function PanelPage() {
           .single();
         setRole(profile?.role as Role);
         setName(profile?.full_name ?? "");
+        setProfileReady(true);
+      } else {
+        setRole(undefined);
+        setProfileReady(true);
       }
     });
     const { data: listener } = supabase.auth.onAuthStateChange(
@@ -132,7 +138,7 @@ function PanelPage() {
     else {
       const { data } = await supabase.auth.getSession();
       if (data.session) {
-        setSession(true);
+        setProfileReady(false);
         const { data: profile } = await supabase
           .from("profiles")
           .select("role,full_name")
@@ -140,6 +146,8 @@ function PanelPage() {
           .single();
         setRole(profile?.role as Role);
         setName(profile?.full_name ?? "");
+        setSession(true);
+        setProfileReady(true);
       }
     }
   };
@@ -160,9 +168,21 @@ function PanelPage() {
         onLogin={() => void login()}
       />
     );
+  if (!profileReady)
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-carbon text-arena">
+        Loading profile…
+      </div>
+    );
+  if (!role)
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-carbon p-5 text-center text-arena">
+        <div><h1 className="font-display text-3xl text-sombrero">Profile unavailable</h1><p className="mt-2 text-sm text-arena/60">Your account does not have a valid panel role yet.</p></div>
+      </main>
+    );
   return (
     <Dashboard
-      role={role ?? "admin"}
+      role={role}
       name={name}
       audio={panelAudioRef.current}
       audioUnlocked={audioUnlocked}

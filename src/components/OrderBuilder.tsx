@@ -327,7 +327,7 @@ export function OrderBuilder({
         </Dialog>
       </section>
       <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
-        <DialogContent className="z-[70] max-h-[90dvh] w-[calc(100%-1.5rem)] max-w-xl overflow-y-auto rounded-3xl border-sombrero/25 bg-gris p-5 text-arena sm:p-7">
+        <DialogContent className="z-[100] max-h-[90dvh] w-[calc(100%-1.5rem)] max-w-xl overflow-y-auto rounded-3xl border-sombrero/25 bg-gris p-5 text-arena sm:p-7">
           <DialogTitle className="sr-only">{t.cart}</DialogTitle>
           <div>
         <div className="mb-4 flex items-center justify-between">
@@ -449,7 +449,7 @@ export function OrderBuilder({
         </DialogContent>
       </Dialog>
       {cart.length > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-sombrero/30 bg-carbon/95 p-3 backdrop-blur-md">
+        <div className="fixed inset-x-0 bottom-0 z-[90] border-t border-sombrero/30 bg-carbon/95 p-3 backdrop-blur-md">
           <div className="mx-auto max-w-3xl">
             <button
               type="button"
