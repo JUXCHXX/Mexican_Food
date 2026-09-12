@@ -243,13 +243,15 @@ function Dashboard({
 }) {
   const [orders, setOrders] = useState<PanelOrder[]>([]);
   const [query, setQuery] = useState("");
-  const [active, setActive] = useState<"kanban" | "settings" | "stats">(
+  const [active, setActive] = useState<"kanban" | "tables" | "settings" | "stats">(
     role === "super_admin" ? "settings" : "kanban",
   );
   const supabase = getSupabase();
   const [now, setNow] = useState(() => Date.now());
   const [soundMuted, setSoundMuted] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<PanelOrder | null>(null);
+  const [selectedTable, setSelectedTable] = useState<{ id: string; number: number } | null>(null);
+  const [tables, setTables] = useState<Array<{ id: string; number: number }>>([]);
   const [orderHistory, setOrderHistory] = useState<
     Array<{ status: OrderStatus; changed_at: string }>
   >([]);
@@ -263,8 +265,18 @@ function Dashboard({
       .limit(300);
     setOrders((data ?? []) as PanelOrder[]);
   };
+  const loadTables = async () => {
+    if (!supabase) return;
+    const { data } = await supabase
+      .from("tables")
+      .select("id,number")
+      .eq("active", true)
+      .order("number");
+    setTables((data ?? []) as Array<{ id: string; number: number }>);
+  };
   useEffect(() => {
     void loadOrders();
+    void loadTables();
     if (!supabase) return;
     const channel = supabase
       .channel("staff-orders")
@@ -272,6 +284,20 @@ function Dashboard({
         "postgres_changes",
         { event: "*", schema: "public", table: "orders" },
         () => void loadOrders(),
+      )
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [supabase]);
+  useEffect(() => {
+    if (!supabase) return;
+    const channel = supabase
+      .channel("staff-tables")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tables" },
+        () => void loadTables(),
       )
       .subscribe();
     return () => {
@@ -341,16 +367,22 @@ function Dashboard({
       </header>
       <div className="mx-auto mt-8 max-w-[1500px]">
         <nav className="mb-6 flex flex-wrap gap-2">
-          {role === "admin" && (
-            <button
-              type="button"
-              onClick={() => setActive("kanban")}
-              className={`rounded-full px-4 py-2 text-sm font-semibold ${active === "kanban" ? "bg-sombrero text-carbon" : "border border-arena/20"}`}
-            >
-              <UtensilsCrossed className="mr-1 inline h-4 w-4" />
-              Kanban
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => setActive("kanban")}
+            className={`rounded-full px-4 py-2 text-sm font-semibold ${active === "kanban" ? "bg-sombrero text-carbon" : "border border-arena/20"}`}
+          >
+            <UtensilsCrossed className="mr-1 inline h-4 w-4" />
+            Kanban
+          </button>
+          <button
+            type="button"
+            onClick={() => setActive("tables")}
+            className={`rounded-full px-4 py-2 text-sm font-semibold ${active === "tables" ? "bg-sombrero text-carbon" : "border border-arena/20"}`}
+          >
+            <Table2 className="mr-1 inline h-4 w-4" />
+            Mesas
+          </button>
           {role === "super_admin" && (
             <>
               <button
@@ -372,7 +404,7 @@ function Dashboard({
             </>
           )}
         </nav>
-        {role === "admin" && active === "kanban" && (
+        {active === "kanban" && (
           <>
             <div className="mb-5 flex max-w-sm items-center gap-2">
               <div className="flex flex-1 items-center gap-2 rounded-full border border-arena/15 bg-gris px-4 py-2">
@@ -444,18 +476,119 @@ function Dashboard({
                 </section>
               ))}
             </div>
-            <OrderInvoiceDialog
-              order={selectedOrder}
-              history={orderHistory}
-              onOpenChange={(open) => !open && setSelectedOrder(null)}
-              onMove={move}
-            />
           </>
+        )}
+        {active === "tables" && (
+          <TableMap
+            tables={tables}
+            orders={orders}
+            selectedTable={selectedTable}
+            onSelectTable={setSelectedTable}
+            onOpenOrder={openOrder}
+            onMove={move}
+          />
         )}
         {role === "super_admin" && active === "settings" && <SuperAdminSettings />}
         {role === "super_admin" && active === "stats" && <Stats orders={orders} />}
+        <OrderInvoiceDialog
+          order={selectedOrder}
+          history={orderHistory}
+          onOpenChange={(open) => !open && setSelectedOrder(null)}
+          onMove={move}
+        />
       </div>
     </main>
+  );
+}
+
+function TableMap({
+  tables,
+  orders,
+  selectedTable,
+  onSelectTable,
+  onOpenOrder,
+  onMove,
+}: {
+  tables: Array<{ id: string; number: number }>;
+  orders: PanelOrder[];
+  selectedTable: { id: string; number: number } | null;
+  onSelectTable: (table: { id: string; number: number } | null) => void;
+  onOpenOrder: (order: PanelOrder) => void;
+  onMove: (order: PanelOrder, status: OrderStatus) => Promise<void>;
+}) {
+  const activeOrders = (tableId: string) =>
+    orders.filter(
+      (order) =>
+        order.table_id === tableId &&
+        (order.status === "nuevo" || order.status === "cocina" || order.status === "listo"),
+    );
+  const selectedOrders = selectedTable ? activeOrders(selectedTable.id) : [];
+  return (
+    <>
+      <section className="rounded-3xl border border-arena/10 bg-gris/35 p-5">
+        <div className="mb-5">
+          <h2 className="font-display text-3xl text-arena">Mapa de mesas</h2>
+          <p className="mt-1 text-sm text-arena/60">Rojo suave: ocupada · Dorado: libre</p>
+        </div>
+        {tables.length ? (
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(110px,1fr))] gap-x-6 gap-y-9 p-3 sm:p-5">
+            {tables.map((table) => {
+              const occupied = activeOrders(table.id).length > 0;
+              return (
+                <button
+                  key={table.id}
+                  type="button"
+                  onClick={() => onSelectTable(table)}
+                  aria-label={`Mesa ${table.number}, ${occupied ? "ocupada" : "libre"}`}
+                  className={`relative aspect-[1.25] rounded-[2rem] border px-3 py-4 shadow-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-arena ${occupied ? "border-tradicional/50 bg-tradicional/35 text-arena" : "border-sombrero/50 bg-sombrero/25 text-arena"}`}
+                >
+                  <span className="absolute -top-3 left-1/2 h-3 w-8 -translate-x-1/2 rounded-full bg-arena/45" />
+                  <span className="absolute -bottom-3 left-1/2 h-3 w-8 -translate-x-1/2 rounded-full bg-arena/45" />
+                  <span className="absolute left-[-0.7rem] top-1/2 h-8 w-3 -translate-y-1/2 rounded-full bg-arena/45" />
+                  <span className="absolute right-[-0.7rem] top-1/2 h-8 w-3 -translate-y-1/2 rounded-full bg-arena/45" />
+                  <span className="block font-display text-4xl leading-none">{table.number}</span>
+                  <span className="mt-2 block text-[10px] font-bold uppercase tracking-widest">
+                    {occupied ? "Ocupada" : "Libre"}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="py-10 text-center text-sm text-arena/60">
+            No hay mesas activas configuradas.
+          </p>
+        )}
+      </section>
+      <Dialog open={Boolean(selectedTable)} onOpenChange={(open) => !open && onSelectTable(null)}>
+        <DialogContent className="max-h-[85dvh] max-w-2xl overflow-y-auto border-arena/20 bg-carbon text-arena">
+          <DialogTitle className="font-display text-3xl text-sombrero">
+            Mesa {selectedTable?.number}
+          </DialogTitle>
+          {selectedOrders.length ? (
+            <div className="mt-4 space-y-3">
+              <p className="text-sm text-arena/60">Pedidos activos ({selectedOrders.length})</p>
+              {selectedOrders.map((order) => (
+                <OrderCard
+                  key={order.id}
+                  order={order}
+                  onMove={onMove}
+                  onOpen={(current) => {
+                    onSelectTable(null);
+                    onOpenOrder(current);
+                  }}
+                  isOverdue={false}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="mt-4 rounded-2xl border border-arena/10 bg-gris/50 p-6 text-center text-sm text-arena/60">
+              Esta mesa no tiene pedidos activos.
+            </p>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

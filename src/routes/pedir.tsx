@@ -5,7 +5,9 @@ import { MenuProvider } from "@/contexts/MenuContext";
 import { OrderBuilder, OrderConfirmation } from "@/components/OrderBuilder";
 import { MyOrdersBubble } from "@/components/MyOrdersBubble";
 import type { OrderResult } from "@/lib/order-types";
-import type { OrderType } from "@/lib/supabase";
+import { getSupabase, type OrderType } from "@/lib/supabase";
+
+type ActiveTable = { id: string; number: number; qr_token: string };
 
 export const Route = createFileRoute("/pedir")({
   head: () => ({ meta: [{ title: "Pedir — Fabian's Mexican Restaurant" }] }),
@@ -19,14 +21,30 @@ export const Route = createFileRoute("/pedir")({
 function OrderPage() {
   const [orderType, setOrderType] = useState<OrderType>("pickup");
   const [tableToken, setTableToken] = useState<string>();
+  const [activeTables, setActiveTables] = useState<ActiveTable[]>([]);
+  const [tableLoading, setTableLoading] = useState(false);
   const [language, setLanguage] = useState<"es" | "en">("es");
   const [result, setResult] = useState<OrderResult>();
   const search = Route.useSearch();
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const mesa = search.mesa ?? params.get("mesa") ?? undefined;
-    setTableToken(mesa);
+    setTableToken(undefined);
     setOrderType(mesa && search.tipo !== "pickup" ? "dine_in" : "pickup");
+    const supabase = getSupabase();
+    if (!supabase) return;
+    setTableLoading(true);
+    void supabase
+      .from("tables")
+      .select("id,number,qr_token")
+      .eq("active", true)
+      .order("number")
+      .then(({ data }) => {
+        const tables = (data ?? []) as ActiveTable[];
+        setActiveTables(tables);
+        setTableToken(tables.find((table) => table.qr_token === mesa)?.qr_token);
+        setTableLoading(false);
+      });
   }, [search.mesa, search.tipo]);
   const es = language === "es";
   return (
@@ -81,12 +99,47 @@ function OrderPage() {
               </button>
             </div>
           </div>
+          {orderType === "dine_in" && !tableToken && (
+            <section className="mb-6 max-w-2xl rounded-2xl border border-sombrero/30 bg-gris/50 p-4">
+              <p className="font-semibold text-arena">
+                {es ? "Selecciona tu mesa" : "Select your table"}
+              </p>
+              <p className="mt-1 text-sm text-arena/60">
+                {es
+                  ? "No encontramos un código QR válido. Elige tu mesa para continuar."
+                  : "We could not find a valid QR code. Choose your table to continue."}
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {tableLoading ? (
+                  <span className="text-sm text-arena/60">...</span>
+                ) : activeTables.length ? (
+                  activeTables.map((table) => (
+                    <button
+                      key={table.id}
+                      type="button"
+                      onClick={() => setTableToken(table.qr_token)}
+                      className="rounded-full border border-sombrero/50 px-4 py-2 text-sm font-bold text-sombrero transition hover:bg-sombrero hover:text-carbon"
+                    >
+                      {es ? "Mesa" : "Table"} {table.number}
+                    </button>
+                  ))
+                ) : (
+                  <span className="text-sm text-tradicional">
+                    {es
+                      ? "No hay mesas activas disponibles."
+                      : "There are no active tables available."}
+                  </span>
+                )}
+              </div>
+            </section>
+          )}
           {result ? (
             <OrderConfirmation result={result} language={language} />
           ) : (
             <OrderBuilder
               orderType={orderType}
               tableToken={tableToken}
+              tableRequired={orderType === "dine_in"}
               language={language}
               onComplete={setResult}
             />

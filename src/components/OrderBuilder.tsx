@@ -89,11 +89,13 @@ function getPriceOptions(item: RawMenuItem) {
 export function OrderBuilder({
   orderType,
   tableToken,
+  tableRequired,
   language,
   onComplete,
 }: {
   orderType: OrderType;
   tableToken?: string;
+  tableRequired?: boolean;
   language: Language;
   onComplete: (result: OrderResult) => void;
 }) {
@@ -191,11 +193,16 @@ export function OrderBuilder({
     );
   const submit = async () => {
     setError("");
-    if (!customerName.trim() || customerPhone.replace(/\D/g, "").length < 7 || !cart.length) {
+    if (
+      !customerName.trim() ||
+      customerPhone.replace(/\D/g, "").length < 7 ||
+      !cart.length ||
+      (tableRequired && !tableToken)
+    ) {
       setError(
         language === "es"
-          ? "Completa nombre, teléfono y agrega al menos un plato."
-          : "Enter your name, phone and at least one dish.",
+          ? "Completa nombre, teléfono, mesa y agrega al menos un plato."
+          : "Enter your name, phone, table and at least one dish.",
       );
       return;
     }
@@ -281,7 +288,7 @@ export function OrderBuilder({
             : "Choose a category to see its dishes and add them to your order."}
         </p>
         <Dialog open={categoryOpen} onOpenChange={setCategoryOpen}>
-          <DialogContent className="bottom-0 left-0 top-auto z-[60] max-h-[88dvh] w-full max-w-none translate-x-0 translate-y-0 overflow-y-auto rounded-t-3xl border-arena/15 bg-carbon p-5 text-arena sm:bottom-auto sm:left-1/2 sm:max-w-5xl sm:translate-x-[-50%] sm:translate-y-[-50%] sm:rounded-3xl sm:p-7">
+          <DialogContent className="z-[60] max-h-[85dvh] w-[calc(100%-2rem)] max-w-5xl translate-x-[-50%] translate-y-[-50%] overflow-y-auto rounded-3xl border-arena/15 bg-carbon p-5 text-arena sm:p-7">
             <DialogTitle className="pr-9 font-display text-3xl text-sombrero">
               {section?.label}
             </DialogTitle>
