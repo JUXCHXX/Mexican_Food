@@ -73,7 +73,6 @@ function PanelPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState("");
-  const [panelError, setPanelError] = useState("");
   const loadPanelProfile = async () => {
     if (!supabase) return;
     const { data: directProfile } = await supabase
@@ -285,6 +284,7 @@ function Dashboard({
   const [now, setNow] = useState(() => Date.now());
   const [soundMuted, setSoundMuted] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<PanelOrder | null>(null);
+  const [panelError, setPanelError] = useState("");
   const [orderHistory, setOrderHistory] = useState<
     Array<{ status: OrderStatus; changed_at: string }>
   >([]);
