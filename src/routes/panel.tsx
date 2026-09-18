@@ -7,6 +7,7 @@ import {
   LogIn,
   LogOut,
   Printer,
+  XCircle,
   Search,
   Settings2,
   Star,
@@ -72,6 +73,7 @@ function PanelPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState("");
+  const [panelError, setPanelError] = useState("");
   const loadPanelProfile = async () => {
     if (!supabase) return;
     const { data: directProfile } = await supabase
@@ -82,8 +84,7 @@ function PanelPage() {
       ? { data: undefined, error: null }
       : await supabase.rpc("get_my_panel_profile");
     const profile = (directProfile?.role ? directProfile : rpcData?.[0]) as
-      | { role?: Role; full_name?: string }
-      | undefined;
+      { role?: Role; full_name?: string } | undefined;
     if (rpcError || !profile?.role) {
       setRole(undefined);
       setAuthError(
@@ -323,6 +324,28 @@ function Dashboard({
     );
     setSelectedOrder((current) => (current?.id === order.id ? { ...current, status } : current));
   };
+  const reject = async (order: PanelOrder) => {
+    if (!supabase || order.status !== "nuevo") return;
+    if (!window.confirm(`¿Rechazar el pedido ${order.order_number}?`)) return;
+    setPanelError("");
+    const { data, error } = await supabase
+      .from("orders")
+      .update({ status: "rechazado" })
+      .eq("id", order.id)
+      .eq("status", "nuevo")
+      .select("id")
+      .maybeSingle();
+    if (error || !data) {
+      setPanelError(error?.message ?? "El pedido ya no está disponible para rechazarlo.");
+      return;
+    }
+    setOrders((current) =>
+      current.map((item) => (item.id === order.id ? { ...item, status: "rechazado" } : item)),
+    );
+    setSelectedOrder((current) =>
+      current?.id === order.id ? { ...current, status: "rechazado" } : current,
+    );
+  };
   const openOrder = async (order: PanelOrder) => {
     setSelectedOrder(order);
     setOrderHistory([]);
@@ -422,6 +445,7 @@ function Dashboard({
         </nav>
         {role !== "support" && active === "kanban" && (
           <>
+            {panelError && <p className="mb-4 text-sm text-tradicional">{panelError}</p>}
             <div className="mb-5 flex max-w-sm items-center gap-2">
               <div className="flex flex-1 items-center gap-2 rounded-full border border-arena/15 bg-gris px-4 py-2">
                 <Search className="h-4 w-4 text-sombrero" />
@@ -481,6 +505,7 @@ function Dashboard({
                           key={order.id}
                           order={order}
                           onMove={move}
+                          onReject={reject}
                           onOpen={openOrder}
                           isOverdue={
                             order.status === "nuevo" &&
@@ -502,6 +527,7 @@ function Dashboard({
           history={orderHistory}
           onOpenChange={(open) => !open && setSelectedOrder(null)}
           onMove={move}
+          onReject={reject}
         />
       </div>
     </main>
@@ -515,6 +541,7 @@ function TableMap({
   onSelectTable,
   onOpenOrder,
   onMove,
+  onReject,
 }: {
   tables: Array<{ id: string; number: number }>;
   orders: PanelOrder[];
@@ -522,6 +549,7 @@ function TableMap({
   onSelectTable: (table: { id: string; number: number } | null) => void;
   onOpenOrder: (order: PanelOrder) => void;
   onMove: (order: PanelOrder, status: OrderStatus) => Promise<void>;
+  onReject: (order: PanelOrder) => Promise<void>;
 }) {
   const activeOrders = (tableId: string) =>
     orders.filter(
@@ -580,6 +608,7 @@ function TableMap({
                   key={order.id}
                   order={order}
                   onMove={onMove}
+                  onReject={onReject}
                   onOpen={(current) => {
                     onSelectTable(null);
                     onOpenOrder(current);
@@ -602,11 +631,13 @@ function TableMap({
 function OrderCard({
   order,
   onMove,
+  onReject,
   onOpen,
   isOverdue,
 }: {
   order: PanelOrder;
   onMove: (order: PanelOrder, status: OrderStatus) => Promise<void>;
+  onReject: (order: PanelOrder) => Promise<void>;
   onOpen: (order: PanelOrder) => void;
   isOverdue: boolean;
 }) {
@@ -670,6 +701,18 @@ function OrderCard({
           </button>
         )}
       </div>
+      {order.status === "nuevo" && (
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            void onReject(order);
+          }}
+          className="mt-2 inline-flex items-center rounded-full border border-tradicional/60 px-3 py-1 text-xs text-tradicional"
+        >
+          <XCircle className="mr-1 h-4 w-4" /> Rechazar pedido
+        </button>
+      )}
     </article>
   );
 }
@@ -679,11 +722,13 @@ function OrderInvoiceDialog({
   history,
   onOpenChange,
   onMove,
+  onReject,
 }: {
   order: PanelOrder | null;
   history: Array<{ status: OrderStatus; changed_at: string }>;
   onOpenChange: (open: boolean) => void;
   onMove: (order: PanelOrder, status: OrderStatus) => Promise<void>;
+  onReject: (order: PanelOrder) => Promise<void>;
 }) {
   if (!order) return null;
   const next =
@@ -803,6 +848,15 @@ function OrderInvoiceDialog({
                 Marcar como {STATUS_LABELS[next].es}
               </button>
             )}
+            {order.status === "nuevo" && (
+              <button
+                type="button"
+                onClick={() => void onReject(order)}
+                className="rounded-full border border-tradicional/60 px-4 py-2 text-sm font-bold text-tradicional"
+              >
+                <XCircle className="mr-1 inline h-4 w-4" /> Rechazar pedido
+              </button>
+            )}
           </div>
         </div>
       </DialogContent>
@@ -839,15 +893,25 @@ function SupportSettings() {
   };
   return (
     <section className="max-w-2xl rounded-3xl border border-arena/10 bg-gris/50 p-6">
-      <p className="text-xs font-bold uppercase tracking-[0.22em] text-sombrero">Support controls</p>
+      <p className="text-xs font-bold uppercase tracking-[0.22em] text-sombrero">
+        Support controls
+      </p>
       <h2 className="mt-2 font-display text-3xl">Table ordering</h2>
       <p className="mt-2 text-sm leading-relaxed text-arena/60">
         Turn this on only when the table-ordering rollout is ready. While it is off, table options,
         QR ordering, and table management stay unavailable in the customer app and staff panel.
       </p>
       <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-arena/10 bg-carbon/50 p-4">
-        <div><p className="font-semibold">Accept orders at tables</p><p className="text-sm text-arena/55">Currently {enabled ? "enabled" : "disabled"}</p></div>
-        <button type="button" disabled={saving} onClick={() => void setTableOrdering(!enabled)} className={`rounded-full px-5 py-2.5 font-bold disabled:opacity-50 ${enabled ? "bg-tradicional text-arena" : "bg-sombrero text-carbon"}`}>
+        <div>
+          <p className="font-semibold">Accept orders at tables</p>
+          <p className="text-sm text-arena/55">Currently {enabled ? "enabled" : "disabled"}</p>
+        </div>
+        <button
+          type="button"
+          disabled={saving}
+          onClick={() => void setTableOrdering(!enabled)}
+          className={`rounded-full px-5 py-2.5 font-bold disabled:opacity-50 ${enabled ? "bg-tradicional text-arena" : "bg-sombrero text-carbon"}`}
+        >
           {saving ? "Saving…" : enabled ? "Disable" : "Enable"}
         </button>
       </div>
@@ -920,7 +984,10 @@ function SuperAdminSettings() {
   };
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      <section className="hidden rounded-3xl border border-arena/10 bg-gris/50 p-5" aria-hidden="true">
+      <section
+        className="hidden rounded-3xl border border-arena/10 bg-gris/50 p-5"
+        aria-hidden="true"
+      >
         <h2 className="font-display text-2xl">Agotados</h2>
         <p className="mt-2 text-sm text-arena/60">
           Los cambios afectan menú público y creación de pedidos.

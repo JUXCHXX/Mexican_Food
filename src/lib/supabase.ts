@@ -11,13 +11,14 @@ export function getSupabase() {
 }
 
 export type OrderType = "dine_in" | "pickup";
-export type OrderStatus = "nuevo" | "cocina" | "listo" | "entregado";
+export type OrderStatus = "nuevo" | "cocina" | "listo" | "entregado" | "rechazado";
 
-export const ORDER_STATUSES: OrderStatus[] = ["nuevo", "cocina", "listo", "entregado"];
+export const ORDER_STATUSES: OrderStatus[] = ["nuevo", "cocina", "listo", "entregado", "rechazado"];
 
 export const STATUS_LABELS: Record<OrderStatus, { es: string; en: string }> = {
   nuevo: { es: "Nuevo pedido", en: "New order" },
   cocina: { es: "Enviar a cocina", en: "Send to kitchen" },
   listo: { es: "Pedido listo", en: "Ready" },
   entregado: { es: "Entregado", en: "Delivered" },
+  rechazado: { es: "Rechazado", en: "Rejected" },
 };

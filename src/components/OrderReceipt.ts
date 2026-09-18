@@ -1,6 +1,6 @@
 /** Change this single value to "58mm" when the kitchen printer uses 58 mm rolls. */
 const RECEIPT_PAPER_WIDTH = "80mm";
-const RECEIPT_PAGE_MARGIN = "3mm";
+const RECEIPT_PAGE_MARGIN = "0";
 
 export type ReceiptOrder = {
   order_number: string;
@@ -35,7 +35,7 @@ const escapeHtml = (value: string | number | null | undefined) =>
     .replaceAll("'", "&#039;");
 
 export function openOrderReceipt(order: ReceiptOrder) {
-  const popup = window.open("", "_blank", "width=460,height=720");
+  const popup = window.open("", "_blank", "width=302,height=900");
   if (!popup) return;
 
   const items = order.order_items
@@ -55,9 +55,9 @@ export function openOrderReceipt(order: ReceiptOrder) {
 <style>
   @page { size: ${RECEIPT_PAPER_WIDTH} auto; margin: ${RECEIPT_PAGE_MARGIN}; }
   * { box-sizing: border-box; }
-  html, body { width: 100%; margin: 0; padding: 0; background: #fff; }
+  html, body { width: ${RECEIPT_PAPER_WIDTH}; margin: 0; padding: 0; background: #fff; }
   body { font-family: Arial, sans-serif; color: #111; font-size: 11px; line-height: 1.35; }
-  .receipt { width: 100%; max-width: none; margin: 0; padding: 0; overflow: visible; }
+  .receipt { width: ${RECEIPT_PAPER_WIDTH}; max-width: ${RECEIPT_PAPER_WIDTH}; margin: 0; padding: 2mm; overflow: visible; }
   header { border-bottom: 1px solid #111; padding: 0 0 3mm; text-align: center; }
   .restaurant { font-size: 14px; font-weight: 700; }
   .code { margin: 3mm 0; border: 1px solid #111; padding: 2mm; text-align: center; font-size: 20px; font-weight: 700; }
@@ -72,7 +72,7 @@ export function openOrderReceipt(order: ReceiptOrder) {
   .total td { border-top: 1px solid #111; font-size: 14px; font-weight: 700; }
   .footer { margin: 5mm 0 0; text-align: center; font-size: 8px; color: #444; }
   @media print {
-    html, body, .receipt { width: 100%; min-height: 0; overflow: visible; }
+    html, body, .receipt { width: ${RECEIPT_PAPER_WIDTH}; min-height: 0; overflow: visible; }
     .receipt { break-after: auto; page-break-after: auto; }
   }
 </style></head><body><main class="receipt">
@@ -83,7 +83,7 @@ export function openOrderReceipt(order: ReceiptOrder) {
 ${order.notes ? `<div class="notes"><strong>Notas:</strong><br>${escapeHtml(order.notes)}</div>` : ""}
 <table class="totals"><tbody><tr><td>Subtotal</td><td>${money(order.subtotal)}</td></tr><tr><td>Impuesto (9.75%)</td><td>${money(order.tax ?? 0)}</td></tr>${Number(order.surcharge) ? `<tr><td>Recargo pickup</td><td>${money(order.surcharge)}</td></tr>` : ""}<tr class="total"><td>Total</td><td>${money(order.total)}</td></tr></tbody></table>
 <p class="footer">Gracias por su compra. Consumir alimentos crudos o poco cocidos puede aumentar el riesgo de enfermedades transmitidas por alimentos.</p>
-</main><script>window.print()</script></body></html>`);
+</main><script>window.addEventListener("load", () => window.print())</script></body></html>`);
   popup.document.close();
   // In Chrome --kiosk-printing, this same direct print call is sent silently to the default printer.
 }

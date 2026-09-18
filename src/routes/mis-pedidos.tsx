@@ -3,11 +3,41 @@ import { ArrowLeft, ChevronDown, Clock3, Languages, Loader2, Search, Star } from
 import { useEffect, useState } from "react";
 import { getSupabase, ORDER_STATUSES, STATUS_LABELS, type OrderStatus } from "@/lib/supabase";
 import type { CartItem, OrderResult } from "@/lib/order-types";
+import { getMenuItemSlug, menuSections, type RawMenuItem } from "@/lib/menu-data";
 
 export const Route = createFileRoute("/mis-pedidos")({
   head: () => ({ meta: [{ title: "Mis pedidos — Fabian's" }] }),
   component: MyOrdersPage,
 });
+
+function getEditPriceOptions(item: RawMenuItem) {
+  const fields: Array<[string, string]> = [
+    ["price", "Standard"],
+    ["price_small", "Small"],
+    ["price_large", "Large"],
+    ["price_single", "Single"],
+    ["price_double", "Double"],
+    ["price_half", "Half"],
+    ["price_full", "Full"],
+    ["price_regular", "Regular"],
+    ["price_mixed", "Mixed"],
+    ["price_shrimp", "Shrimp"],
+    ["price_texana", "Texana"],
+    ["price_3", "3 pieces"],
+    ["price_ref", "Kids"],
+  ];
+  const options = fields.flatMap(([field, label]) =>
+    typeof item[field] === "number" ? [{ label, price: item[field] as number }] : [],
+  );
+  if (options.length) return options;
+  if (item.prices && typeof item.prices === "object") {
+    return Object.entries(item.prices as Record<string, number>).map(([label, price]) => ({
+      label: label.replaceAll("_", " "),
+      price,
+    }));
+  }
+  return [];
+}
 
 function MyOrdersPage() {
   const [language, setLanguage] = useState<"es" | "en">("es");
@@ -196,6 +226,11 @@ function OrderStatusCard({
   const status = entry.order.status as OrderStatus;
   const statusIndex = ORDER_STATUSES.indexOf(status);
   const canEdit = status === "nuevo";
+  const [newCategory, setNewCategory] = useState(Object.keys(menuSections)[0]);
+  const [newItemName, setNewItemName] = useState("");
+  const availableItems = menuSections[newCategory]?.items ?? [];
+  const selectedNewItem = availableItems.find((item) => item.name === newItemName);
+  const newPriceOptions = selectedNewItem ? getEditPriceOptions(selectedNewItem) : [];
   const saveRating = async () => {
     const supabase = getSupabase();
     if (!supabase || !rating) return;
@@ -226,6 +261,31 @@ function OrderStatusCard({
     setEditing(false);
     const result = data as OrderResult;
     onUpdate(result);
+  };
+  const addItem = (option: { label: string; price: number }) => {
+    if (!selectedNewItem) return;
+    const itemSlug = getMenuItemSlug(newCategory, selectedNewItem.name);
+    setItems((current) => {
+      const existing = current.find(
+        (item) => item.item_slug === itemSlug && item.variant === option.label,
+      );
+      if (existing) {
+        return current.map((item) =>
+          item === existing ? { ...item, quantity: item.quantity + 1 } : item,
+        );
+      }
+      return [
+        ...current,
+        {
+          item_slug: itemSlug,
+          item_name: selectedNewItem.name,
+          category_key: newCategory,
+          variant: option.label,
+          unit_price: option.price,
+          quantity: 1,
+        },
+      ];
+    });
   };
   const badge =
     status === "nuevo" ? "🆕" : status === "cocina" ? "🍳" : status === "listo" ? "✅" : "🎉";
@@ -299,6 +359,53 @@ function OrderStatusCard({
           <ChevronDown className={`inline h-4 w-4 ${expanded ? "rotate-180" : ""}`} />
         </button>
       )}
+      {editing && (
+        <div className="mt-4 rounded-xl border border-sombrero/30 p-3">
+          <p className="mb-2 text-sm font-semibold text-sombrero">Añadir plato</p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <select
+              value={newCategory}
+              onChange={(event) => {
+                setNewCategory(event.target.value);
+                setNewItemName("");
+              }}
+              className="rounded-lg bg-carbon px-3 py-2 text-sm text-arena"
+            >
+              {Object.entries(menuSections).map(([key, section]) => (
+                <option key={key} value={key}>
+                  {section.label ?? key}
+                </option>
+              ))}
+            </select>
+            <select
+              value={newItemName}
+              onChange={(event) => setNewItemName(event.target.value)}
+              className="rounded-lg bg-carbon px-3 py-2 text-sm text-arena"
+            >
+              <option value="">Selecciona un plato</option>
+              {availableItems.map((item) => (
+                <option key={item.name} value={item.name}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          {newPriceOptions.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {newPriceOptions.map((option) => (
+                <button
+                  key={option.label}
+                  type="button"
+                  onClick={() => addItem(option)}
+                  className="rounded-full border border-sombrero/50 px-3 py-1 text-xs text-sombrero"
+                >
+                  {option.label} · ${option.price.toFixed(2)}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
       <div className="mt-5 flex justify-between border-t border-arena/10 pt-4 text-lg font-bold text-sombrero">
         <span>Total</span>
         <span>${Number(entry.order.total).toFixed(2)}</span>
@@ -317,7 +424,10 @@ function OrderStatusCard({
           ) : (
             <button
               type="button"
-              onClick={() => setEditing(true)}
+              onClick={() => {
+                setEditing(true);
+                setExpanded(true);
+              }}
               className="rounded-full border border-sombrero/50 px-4 py-2 text-sm font-semibold text-sombrero"
             >
               {labels.edit}
