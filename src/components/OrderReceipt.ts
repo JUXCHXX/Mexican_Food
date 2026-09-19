@@ -38,11 +38,16 @@ export function openOrderReceipt(order: ReceiptOrder) {
   const popup = window.open("", "_blank", "popup,width=302,height=900");
   if (!popup) return;
 
+  let printed = false;
+  const printPopup = () => {
+    if (printed || popup.closed) return;
+    printed = true;
+    popup.focus();
+    popup.print();
+  };
+
   popup.addEventListener("load", () => {
-    window.setTimeout(() => {
-      popup.focus();
-      popup.print();
-    }, 150);
+    window.setTimeout(printPopup, 150);
   });
 
   const items = order.order_items
@@ -92,4 +97,6 @@ ${order.notes ? `<div class="notes"><strong>Notas:</strong><br>${escapeHtml(orde
 <p class="footer">Gracias por su compra. Consumir alimentos crudos o poco cocidos puede aumentar el riesgo de enfermedades transmitidas por alimentos.</p>
 </main></body></html>`);
   popup.document.close();
+  // Some browsers do not dispatch load after document.write on about:blank.
+  window.setTimeout(printPopup, 500);
 }
