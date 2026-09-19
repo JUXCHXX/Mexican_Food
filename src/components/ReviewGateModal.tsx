@@ -1,16 +1,6 @@
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import fabianLogo from "@/assets/fabians-logo.png";
-
-const hasReviewCookie = (): boolean => {
-  if (typeof document === "undefined") return false;
-  const cookies = document.cookie.split("; ");
-  return cookies.some((c) => c.startsWith("fabians_review_shown="));
-};
-
-const setReviewCookie = (): void => {
-  document.cookie = "fabians_review_shown=true; max-age=2592000; path=/";
-};
 
 const GOOGLE_REVIEW_URL = "https://g.page/r/Ceifp0vMzoMKEBM/review";
 
@@ -48,21 +38,8 @@ const getInitialColor = (name: string): string => {
   return colors[charCode % colors.length];
 };
 
-export function ReviewGateModal() {
-  const [show, setShow] = useState(false);
+export function ReviewGateModal({ open, onComplete }: { open: boolean; onComplete: () => void }) {
   const [userReviewed, setUserReviewed] = useState(false);
-
-  useEffect(() => {
-    // Check if cookie exists on mount
-    if (hasReviewCookie()) return;
-
-    // Show modal after 15 seconds
-    const timer = setTimeout(() => {
-      setShow(true);
-    }, 15000);
-
-    return () => clearTimeout(timer);
-  }, []);
 
   const handleGoogleClick = () => {
     window.open(GOOGLE_REVIEW_URL, "_blank");
@@ -70,11 +47,10 @@ export function ReviewGateModal() {
   };
 
   const handleConfirm = () => {
-    setReviewCookie();
-    setShow(false);
+    onComplete();
   };
 
-  if (!show) return null;
+  if (!open) return null;
 
   return (
     <motion.div
@@ -114,10 +90,7 @@ export function ReviewGateModal() {
         {/* Reseñas */}
         <div className="space-y-2 mb-6">
           {reviews.map((review) => (
-            <div
-              key={review.author}
-              className="bg-gris/30 rounded-2xl border border-arena/10 p-3"
-            >
+            <div key={review.author} className="bg-gris/30 rounded-2xl border border-arena/10 p-3">
               <div className="flex gap-2">
                 {/* Avatar con inicial */}
                 <div
@@ -170,7 +143,7 @@ export function ReviewGateModal() {
             onClick={handleConfirm}
             className="w-full border border-arena/30 text-arena/60 hover:text-arena hover:border-arena/50 rounded-2xl py-3 text-base md:text-lg font-semibold transition-all duration-300"
           >
-            Ya califiqué, ver el menú →
+            Ya califiqué, continuar →
           </motion.button>
         )}
       </motion.div>

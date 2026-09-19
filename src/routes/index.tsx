@@ -6,7 +6,6 @@ import { Footer } from "@/components/Footer";
 import { ChatBubble } from "@/components/ChatBubble";
 import { SearchBubble } from "@/components/SearchBubble";
 import { MenuModal } from "@/components/MenuModal";
-import { ReviewGateModal } from "@/components/ReviewGateModal";
 import { CookieBanner } from "@/components/CookieBanner";
 import { MyOrdersBubble } from "@/components/MyOrdersBubble";
 import { MenuProvider } from "@/contexts/MenuContext";
@@ -32,7 +31,7 @@ export const Route = createFileRoute("/")({
 });
 
 type MenuShape = {
-  menu: Record<string, { label: string; description?: string; items: any[] }>;
+  menu: Record<string, { label: string; description?: string; items: unknown[] }>;
 };
 
 function Index() {
@@ -47,7 +46,6 @@ function Index() {
 
   return (
     <MenuProvider>
-      <ReviewGateModal />
       <MenuModal />
       <main className="min-h-screen bg-carbon flex flex-col">
         <HeroSection onCtaClick={scrollToMenu} />

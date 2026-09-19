@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { getSupabase, ORDER_STATUSES, STATUS_LABELS, type OrderStatus } from "@/lib/supabase";
 import type { CartItem, OrderResult } from "@/lib/order-types";
 import { getMenuItemSlug, menuSections, type RawMenuItem } from "@/lib/menu-data";
+import { ReviewGateModal } from "@/components/ReviewGateModal";
 
 export const Route = createFileRoute("/mis-pedidos")({
   head: () => ({ meta: [{ title: "Mis pedidos — Fabian's" }] }),
@@ -223,9 +224,11 @@ function OrderStatusCard({
   const [editing, setEditing] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [items, setItems] = useState<CartItem[]>(entry.items);
+  const [reviewCompleted, setReviewCompleted] = useState(false);
   const status = entry.order.status as OrderStatus;
   const statusIndex = ORDER_STATUSES.indexOf(status);
   const canEdit = status === "nuevo";
+  const requiresGoogleReview = status === "entregado" && !entry.rating && !reviewCompleted;
   const [newCategory, setNewCategory] = useState(Object.keys(menuSections)[0]);
   const [newItemName, setNewItemName] = useState("");
   const availableItems = menuSections[newCategory]?.items ?? [];
@@ -290,185 +293,188 @@ function OrderStatusCard({
   const badge =
     status === "nuevo" ? "🆕" : status === "cocina" ? "🍳" : status === "listo" ? "✅" : "🎉";
   return (
-    <article className="rounded-3xl border border-arena/10 bg-gris/60 p-5 shadow-lg">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <div className="text-xs uppercase tracking-widest text-arena/50">
-            {entry.order.order_type === "pickup"
-              ? "Pickup"
-              : `${language === "es" ? "Mesa" : "Table"} ${entry.order.table_number ?? ""}`}
+    <>
+      <ReviewGateModal open={requiresGoogleReview} onComplete={() => setReviewCompleted(true)} />
+      <article className="rounded-3xl border border-arena/10 bg-gris/60 p-5 shadow-lg">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <div className="text-xs uppercase tracking-widest text-arena/50">
+              {entry.order.order_type === "pickup"
+                ? "Pickup"
+                : `${language === "es" ? "Mesa" : "Table"} ${entry.order.table_number ?? ""}`}
+            </div>
+            <h2 className="mt-1 font-display text-4xl text-sombrero">{entry.order.order_number}</h2>
+            <p className="mt-1 text-xs text-arena/50">
+              <Clock3 className="mr-1 inline h-3 w-3" />
+              {new Date(entry.order.created_at).toLocaleString()}
+            </p>
           </div>
-          <h2 className="mt-1 font-display text-4xl text-sombrero">{entry.order.order_number}</h2>
-          <p className="mt-1 text-xs text-arena/50">
-            <Clock3 className="mr-1 inline h-3 w-3" />
-            {new Date(entry.order.created_at).toLocaleString()}
-          </p>
+          <div className="rounded-full border border-sombrero/40 px-3 py-2 text-sm font-semibold text-sombrero">
+            {badge} {STATUS_LABELS[status][language]}
+          </div>
         </div>
-        <div className="rounded-full border border-sombrero/40 px-3 py-2 text-sm font-semibold text-sombrero">
-          {badge} {STATUS_LABELS[status][language]}
+        <div className="mt-5 grid grid-cols-4 gap-1">
+          {ORDER_STATUSES.map((step, index) => (
+            <div
+              key={step}
+              className={`h-1.5 rounded-full ${index <= statusIndex ? "bg-sombrero" : "bg-arena/15"}`}
+            />
+          ))}
         </div>
-      </div>
-      <div className="mt-5 grid grid-cols-4 gap-1">
-        {ORDER_STATUSES.map((step, index) => (
-          <div
-            key={step}
-            className={`h-1.5 rounded-full ${index <= statusIndex ? "bg-sombrero" : "bg-arena/15"}`}
-          />
-        ))}
-      </div>
-      <div className="mt-5 space-y-2">
-        {items.slice(0, expanded ? undefined : 3).map((item, index) => (
-          <div
-            key={`${item.item_slug}-${item.variant}`}
-            className="flex items-center justify-between text-sm text-arena"
-          >
-            <span>
-              {item.quantity} × {item.item_name}
-              {(expanded || editing) && (
-                <small className="ml-2 text-arena/50">{item.variant}</small>
+        <div className="mt-5 space-y-2">
+          {items.slice(0, expanded ? undefined : 3).map((item, index) => (
+            <div
+              key={`${item.item_slug}-${item.variant}`}
+              className="flex items-center justify-between text-sm text-arena"
+            >
+              <span>
+                {item.quantity} × {item.item_name}
+                {(expanded || editing) && (
+                  <small className="ml-2 text-arena/50">{item.variant}</small>
+                )}
+              </span>
+              <span>${(item.unit_price * item.quantity).toFixed(2)}</span>
+              {editing && (
+                <input
+                  type="number"
+                  min="1"
+                  value={item.quantity}
+                  onChange={(e) =>
+                    setItems((current) =>
+                      current.map((currentItem, currentIndex) =>
+                        currentIndex === index
+                          ? { ...currentItem, quantity: Math.max(1, Number(e.target.value)) }
+                          : currentItem,
+                      ),
+                    )
+                  }
+                  className="ml-2 w-16 rounded bg-carbon px-2 py-1 text-arena"
+                />
               )}
-            </span>
-            <span>${(item.unit_price * item.quantity).toFixed(2)}</span>
-            {editing && (
-              <input
-                type="number"
-                min="1"
-                value={item.quantity}
-                onChange={(e) =>
-                  setItems((current) =>
-                    current.map((currentItem, currentIndex) =>
-                      currentIndex === index
-                        ? { ...currentItem, quantity: Math.max(1, Number(e.target.value)) }
-                        : currentItem,
-                    ),
-                  )
-                }
-                className="ml-2 w-16 rounded bg-carbon px-2 py-1 text-arena"
-              />
+            </div>
+          ))}
+        </div>
+        {items.length > 3 && (
+          <button
+            type="button"
+            onClick={() => setExpanded((value) => !value)}
+            className="mt-3 text-sm text-sombrero"
+          >
+            {expanded ? "Ver menos" : "Ver detalle"}{" "}
+            <ChevronDown className={`inline h-4 w-4 ${expanded ? "rotate-180" : ""}`} />
+          </button>
+        )}
+        {editing && (
+          <div className="mt-4 rounded-xl border border-sombrero/30 p-3">
+            <p className="mb-2 text-sm font-semibold text-sombrero">Añadir plato</p>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <select
+                value={newCategory}
+                onChange={(event) => {
+                  setNewCategory(event.target.value);
+                  setNewItemName("");
+                }}
+                className="rounded-lg bg-carbon px-3 py-2 text-sm text-arena"
+              >
+                {Object.entries(menuSections).map(([key, section]) => (
+                  <option key={key} value={key}>
+                    {section.label ?? key}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={newItemName}
+                onChange={(event) => setNewItemName(event.target.value)}
+                className="rounded-lg bg-carbon px-3 py-2 text-sm text-arena"
+              >
+                <option value="">Selecciona un plato</option>
+                {availableItems.map((item) => (
+                  <option key={item.name} value={item.name}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {newPriceOptions.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {newPriceOptions.map((option) => (
+                  <button
+                    key={option.label}
+                    type="button"
+                    onClick={() => addItem(option)}
+                    className="rounded-full border border-sombrero/50 px-3 py-1 text-xs text-sombrero"
+                  >
+                    {option.label} · ${option.price.toFixed(2)}
+                  </button>
+                ))}
+              </div>
             )}
           </div>
-        ))}
-      </div>
-      {items.length > 3 && (
-        <button
-          type="button"
-          onClick={() => setExpanded((value) => !value)}
-          className="mt-3 text-sm text-sombrero"
-        >
-          {expanded ? "Ver menos" : "Ver detalle"}{" "}
-          <ChevronDown className={`inline h-4 w-4 ${expanded ? "rotate-180" : ""}`} />
-        </button>
-      )}
-      {editing && (
-        <div className="mt-4 rounded-xl border border-sombrero/30 p-3">
-          <p className="mb-2 text-sm font-semibold text-sombrero">Añadir plato</p>
-          <div className="grid gap-2 sm:grid-cols-2">
-            <select
-              value={newCategory}
-              onChange={(event) => {
-                setNewCategory(event.target.value);
-                setNewItemName("");
-              }}
-              className="rounded-lg bg-carbon px-3 py-2 text-sm text-arena"
-            >
-              {Object.entries(menuSections).map(([key, section]) => (
-                <option key={key} value={key}>
-                  {section.label ?? key}
-                </option>
-              ))}
-            </select>
-            <select
-              value={newItemName}
-              onChange={(event) => setNewItemName(event.target.value)}
-              className="rounded-lg bg-carbon px-3 py-2 text-sm text-arena"
-            >
-              <option value="">Selecciona un plato</option>
-              {availableItems.map((item) => (
-                <option key={item.name} value={item.name}>
-                  {item.name}
-                </option>
-              ))}
-            </select>
+        )}
+        <div className="mt-5 flex justify-between border-t border-arena/10 pt-4 text-lg font-bold text-sombrero">
+          <span>Total</span>
+          <span>${Number(entry.order.total).toFixed(2)}</span>
+        </div>
+        {canEdit && (
+          <div className="mt-4">
+            {editing ? (
+              <button
+                type="button"
+                onClick={() => void saveItems()}
+                disabled={saving}
+                className="rounded-full bg-sombrero px-4 py-2 text-sm font-bold text-carbon"
+              >
+                {saving ? "..." : "Guardar cambios"}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setEditing(true);
+                  setExpanded(true);
+                }}
+                className="rounded-full border border-sombrero/50 px-4 py-2 text-sm font-semibold text-sombrero"
+              >
+                {labels.edit}
+              </button>
+            )}
           </div>
-          {newPriceOptions.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-2">
-              {newPriceOptions.map((option) => (
+        )}
+        {status === "entregado" && (
+          <div className="mt-6 border-t border-arena/10 pt-5">
+            <p className="mb-2 text-sm font-semibold text-arena">{labels.rating}</p>
+            <div className="flex gap-1">
+              {[1, 2, 3, 4, 5].map((value) => (
                 <button
-                  key={option.label}
                   type="button"
-                  onClick={() => addItem(option)}
-                  className="rounded-full border border-sombrero/50 px-3 py-1 text-xs text-sombrero"
+                  key={value}
+                  onClick={() => setRating(value)}
+                  aria-label={`${value} stars`}
                 >
-                  {option.label} · ${option.price.toFixed(2)}
+                  <Star
+                    className={`h-6 w-6 ${value <= rating ? "fill-sombrero text-sombrero" : "text-arena/30"}`}
+                  />
                 </button>
               ))}
             </div>
-          )}
-        </div>
-      )}
-      <div className="mt-5 flex justify-between border-t border-arena/10 pt-4 text-lg font-bold text-sombrero">
-        <span>Total</span>
-        <span>${Number(entry.order.total).toFixed(2)}</span>
-      </div>
-      {canEdit && (
-        <div className="mt-4">
-          {editing ? (
+            <textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder={labels.comment}
+              className="mt-3 min-h-20 w-full rounded-xl border border-arena/15 bg-carbon p-3 text-sm text-arena"
+            />
             <button
               type="button"
-              onClick={() => void saveItems()}
-              disabled={saving}
-              className="rounded-full bg-sombrero px-4 py-2 text-sm font-bold text-carbon"
+              onClick={() => void saveRating()}
+              disabled={saving || !rating}
+              className="mt-2 rounded-full bg-sombrero px-4 py-2 text-sm font-bold text-carbon"
             >
-              {saving ? "..." : "Guardar cambios"}
+              {labels.send}
             </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => {
-                setEditing(true);
-                setExpanded(true);
-              }}
-              className="rounded-full border border-sombrero/50 px-4 py-2 text-sm font-semibold text-sombrero"
-            >
-              {labels.edit}
-            </button>
-          )}
-        </div>
-      )}
-      {status === "entregado" && (
-        <div className="mt-6 border-t border-arena/10 pt-5">
-          <p className="mb-2 text-sm font-semibold text-arena">{labels.rating}</p>
-          <div className="flex gap-1">
-            {[1, 2, 3, 4, 5].map((value) => (
-              <button
-                type="button"
-                key={value}
-                onClick={() => setRating(value)}
-                aria-label={`${value} stars`}
-              >
-                <Star
-                  className={`h-6 w-6 ${value <= rating ? "fill-sombrero text-sombrero" : "text-arena/30"}`}
-                />
-              </button>
-            ))}
+            {message && <p className="mt-2 text-sm text-jalapeno">{message}</p>}
           </div>
-          <textarea
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            placeholder={labels.comment}
-            className="mt-3 min-h-20 w-full rounded-xl border border-arena/15 bg-carbon p-3 text-sm text-arena"
-          />
-          <button
-            type="button"
-            onClick={() => void saveRating()}
-            disabled={saving || !rating}
-            className="mt-2 rounded-full bg-sombrero px-4 py-2 text-sm font-bold text-carbon"
-          >
-            {labels.send}
-          </button>
-          {message && <p className="mt-2 text-sm text-jalapeno">{message}</p>}
-        </div>
-      )}
-    </article>
+        )}
+      </article>
+    </>
   );
 }
