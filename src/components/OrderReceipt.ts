@@ -35,8 +35,15 @@ const escapeHtml = (value: string | number | null | undefined) =>
     .replaceAll("'", "&#039;");
 
 export function openOrderReceipt(order: ReceiptOrder) {
-  const popup = window.open("", "_blank", "width=302,height=900");
+  const popup = window.open("", "_blank", "popup,width=302,height=900");
   if (!popup) return;
+
+  popup.addEventListener("load", () => {
+    window.setTimeout(() => {
+      popup.focus();
+      popup.print();
+    }, 150);
+  });
 
   const items = order.order_items
     .map(
@@ -53,26 +60,26 @@ export function openOrderReceipt(order: ReceiptOrder) {
   popup.document.write(`<!doctype html>
 <html><head><meta charset="utf-8"><title>${escapeHtml(order.order_number)}</title>
 <style>
-  @page { size: ${RECEIPT_PAPER_WIDTH} auto; margin: ${RECEIPT_PAGE_MARGIN}; }
-  * { box-sizing: border-box; }
-  html, body { width: ${RECEIPT_PAPER_WIDTH}; margin: 0; padding: 0; background: #fff; }
-  body { font-family: Arial, sans-serif; color: #111; font-size: 11px; line-height: 1.35; }
-  .receipt { width: ${RECEIPT_PAPER_WIDTH}; max-width: ${RECEIPT_PAPER_WIDTH}; margin: 0; padding: 2mm; overflow: visible; }
-  header { border-bottom: 1px solid #111; padding: 0 0 3mm; text-align: center; }
+  @page { size: ${RECEIPT_PAPER_WIDTH} auto; margin: ${RECEIPT_PAGE_MARGIN} !important; }
+  *, *::before, *::after { box-sizing: border-box; }
+  html { width: ${RECEIPT_PAPER_WIDTH} !important; min-width: ${RECEIPT_PAPER_WIDTH} !important; max-width: ${RECEIPT_PAPER_WIDTH} !important; margin: 0 !important; padding: 0 !important; background: #fff; }
+  body { width: ${RECEIPT_PAPER_WIDTH} !important; min-width: ${RECEIPT_PAPER_WIDTH} !important; max-width: ${RECEIPT_PAPER_WIDTH} !important; margin: 0 !important; padding: 0 !important; background: #fff; color: #111; font-family: Arial, Helvetica, sans-serif; font-size: 11px; line-height: 1.3; }
+  .receipt { display: block; width: ${RECEIPT_PAPER_WIDTH} !important; min-width: ${RECEIPT_PAPER_WIDTH} !important; max-width: ${RECEIPT_PAPER_WIDTH} !important; margin: 0 !important; padding: 2mm !important; overflow: visible; }
+  header { border-bottom: 1px solid #111; padding: 0 0 2mm; text-align: center; }
   .restaurant { font-size: 14px; font-weight: 700; }
-  .code { margin: 3mm 0; border: 1px solid #111; padding: 2mm; text-align: center; font-size: 20px; font-weight: 700; }
-  .meta { margin-bottom: 3mm; font-size: 10px; overflow-wrap: anywhere; }
-  table { width: 100%; border-collapse: collapse; table-layout: fixed; break-inside: auto; }
+  .code { margin: 2mm 0; border: 1px solid #111; padding: 1.5mm; text-align: center; font-size: 18px; font-weight: 700; }
+  .meta { margin-bottom: 2mm; font-size: 10px; overflow-wrap: anywhere; }
+  table { width: 100%; margin: 0; border-collapse: collapse; table-layout: fixed; break-inside: auto; }
   tr { break-inside: avoid; page-break-inside: avoid; }
-  td { padding: 2mm 0; border-bottom: 1px solid #ddd; vertical-align: top; overflow-wrap: anywhere; }
-  td:first-child { padding-right: 2mm; }
+  td { padding: 1.5mm 0; border-bottom: 1px solid #ddd; vertical-align: top; overflow-wrap: anywhere; word-break: normal; }
+  td:first-child { width: 76%; padding-right: 2mm; }
   td:last-child { width: 24%; text-align: right; white-space: nowrap; }
-  .notes { margin: 3mm 0; padding: 2mm; border-left: 1mm solid #111; background: #f1f1f1; overflow-wrap: anywhere; }
-  .totals { margin-left: auto; width: 62%; }
-  .total td { border-top: 1px solid #111; font-size: 14px; font-weight: 700; }
-  .footer { margin: 5mm 0 0; text-align: center; font-size: 8px; color: #444; }
+  .notes { margin: 2mm 0; padding: 1.5mm; border-left: 1mm solid #111; background: #f1f1f1; overflow-wrap: anywhere; }
+  .totals { margin: 2mm 0 0 auto; width: 70%; }
+  .total td { border-top: 1px solid #111; font-size: 13px; font-weight: 700; }
+  .footer { margin: 3mm 0 0; text-align: center; font-size: 8px; color: #444; }
   @media print {
-    html, body, .receipt { width: ${RECEIPT_PAPER_WIDTH}; min-height: 0; overflow: visible; }
+    html, body, .receipt { width: ${RECEIPT_PAPER_WIDTH} !important; min-width: ${RECEIPT_PAPER_WIDTH} !important; max-width: ${RECEIPT_PAPER_WIDTH} !important; min-height: 0; overflow: visible; }
     .receipt { break-after: auto; page-break-after: auto; }
   }
 </style></head><body><main class="receipt">
@@ -83,7 +90,6 @@ export function openOrderReceipt(order: ReceiptOrder) {
 ${order.notes ? `<div class="notes"><strong>Notas:</strong><br>${escapeHtml(order.notes)}</div>` : ""}
 <table class="totals"><tbody><tr><td>Subtotal</td><td>${money(order.subtotal)}</td></tr><tr><td>Impuesto (9.75%)</td><td>${money(order.tax ?? 0)}</td></tr>${Number(order.surcharge) ? `<tr><td>Recargo pickup</td><td>${money(order.surcharge)}</td></tr>` : ""}<tr class="total"><td>Total</td><td>${money(order.total)}</td></tr></tbody></table>
 <p class="footer">Gracias por su compra. Consumir alimentos crudos o poco cocidos puede aumentar el riesgo de enfermedades transmitidas por alimentos.</p>
-</main><script>window.addEventListener("load", () => window.print())</script></body></html>`);
+</main></body></html>`);
   popup.document.close();
-  // In Chrome --kiosk-printing, this same direct print call is sent silently to the default printer.
 }
